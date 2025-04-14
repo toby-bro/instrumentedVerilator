@@ -1,0 +1,74 @@
+FROM debian:bookworm-slim
+
+#Prereqs
+RUN apt-get update && apt-get -y install \
+    autoconf \
+    bear \
+    bison \
+    ccache \
+    clang \
+    clang-format \
+    curl \
+    flex \
+    g++ \
+    gcc \
+    gcovr \
+    git \
+    graphviz \
+    help2man \
+    jq \
+    lcov \
+    libfl-dev \
+    libfl2 \
+    libgoogle-perftools-dev \
+    libunwind-dev \
+    make \
+    mold \
+    numactl \
+    perl \
+    perl-doc \
+    pip \
+    python3 \
+    python3-clang \
+    yapf3 \
+    zlib1g \
+    zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+#Building proscess
+COPY verilator /verilator
+WORKDIR /verilator
+
+RUN git fetch --tags
+RUN git checkout -b stable-branch $(git describe --tags `git rev-list --tags --max-count=1`)
+
+
+
+#Coverage report locaation
+ARG rebuildTests=unknown
+RUN mkdir coverage_reports coverage_tests
+COPY testFiles ./coverage_tests
+
+#Instrumentation flags
+ENV CC=gcc
+ENV CXX=g++
+ENV CFLAGS="-fprofile-arcs -ftest-coverage"
+ENV CXXFLAGS="-fprofile-arcs -ftest-coverage"
+ENV LDFLAGS="-lgcov"
+ENV VERILATOR_ROOT="/verilator"
+
+#After changing src of verilator, rebuild from here
+ARG rebuildVerilator=unknown
+
+RUN autoconf
+RUN ./configure
+RUN make -j `nproc`
+
+#Needed to run gcovr
+ARG rebuildSetup=unknown
+WORKDIR /verilator/src
+RUN ./bisonpre -d -v -o verilog.c verilog.y
+RUN cp verilog.c obj_opt/
+RUN cp verilog.y obj_opt/
+RUN rm -r obj_dbg
+
