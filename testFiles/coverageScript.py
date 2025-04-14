@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import os
 import re
@@ -22,9 +24,9 @@ def main(test_path: str, src_path: str) -> None:
             test_numbers.append(match.group())
 
     print("Number of tests: ", len(test_numbers))
-    test_count = 0
-    coverage_checkpoints = [0, 1, 2, 3, 5, 7, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90]
-    for test in test_numbers:
+
+    coverage_checkpoints = [i for i in range(0, len(test_numbers), 5)]
+    for test_count, test in enumerate(test_numbers):
         # First Verilate
         verilator_cmd = f"""$VERILATOR_ROOT/bin/verilator --cc --binary -Wno-MULTIDRIVEN --Wno-UNOPTFLAT --Wno-NOLATCH --Wno-WIDTHTRUNC --Wno-CMPCONST --Wno-WIDTHEXPAND --Wno-UNSIGNED \
                             /verilator/coverage_tests/transfuzzTestFiles/obj_dir_example_sim_{test}/top.sv \
@@ -34,7 +36,7 @@ def main(test_path: str, src_path: str) -> None:
         p.wait()
 
         # Second create json for the run
-        gcovr_cmd = "gcovr --html -o /verilator/coverage_reports/test.html -e '(.*/)?(V3Coverage\.cpp|V3CoverageJoin\.cpp|V3EmitCMake\.cpp|V3EmitXml\.cpp|V3ExecGraph\.cpp|V3GraphTest\.cpp|V3HierBlock\.cpp|V3Trace\.cpp|V3TraceDecl\.cpp|.*\.h)$' --root /verilator/src"
+        gcovr_cmd = r"gcovr --html -o /testFiles/coverage_reports/test.html -e '(.*/)?(V3Coverage\.cpp|V3CoverageJoin\.cpp|V3EmitCMake\.cpp|V3EmitXml\.cpp|V3ExecGraph\.cpp|V3GraphTest\.cpp|V3HierBlock\.cpp|V3Trace\.cpp|V3TraceDecl\.cpp|.*\.h)$' --root /verilator/src"
         p = subprocess.Popen([gcovr_cmd], shell=True, cwd=src_path)
         p.wait()
 
@@ -44,7 +46,6 @@ def main(test_path: str, src_path: str) -> None:
             gcovr_merge = f"gcovr --html -a '/verilator/coverage_reports/*.json' -o /verilator/coverage_reports/mergeReport_{test_count}_html.html"
             p = subprocess.Popen([gcovr_merge], shell=True, cwd=src_path)
             p.wait()
-        test_count += 1
 
     # Third merge jsons and form html
     gcovr_merge = f"gcovr --html --html-details -a '/verilator/coverage_reports/*.json' -o /verilator/coverage_reports/mergeReport_{test_count}_html.html"
@@ -57,8 +58,18 @@ if __name__ == "__main__":
         prog='coverageScript',
         description='Runs Transfuzz generated circuits and compiles code coverage across all circuits',
     )
-    parser.add_argument('test_path')  # positional argument
-    parser.add_argument('verilator_src_path')
+    parser.add_argument(
+        'test_path',
+        default='/verilator/coverage_tests/transfuzzTestFiles',
+        nargs='?',
+        help='Path to test directory (default: /verilator/coverage_tests/transfuzzTestFiles)',
+    )
+    parser.add_argument(
+        'verilator_src_path',
+        default='/verilator/src',
+        nargs='?',
+        help='Path to Verilator source code (default: /verilator/src)',
+    )
 
     args = parser.parse_args()
     # print(args.test_path, args.verilator_src_path)

@@ -1,14 +1,20 @@
+all: run
+
 .PHONY: init
 init:
-	git clone https://github.com/verilator/verilator
+	if [ ! -d "verilator" ]; then \
+		git clone https://github.com/verilator/verilator; \
+	else \
+		echo "verilator directory already exists. Skipping clone."; \
+	fi
 
 .PHONY: clean
 clean:
 	rm -rf build obj_dir
 
 .PHONY: build
-build:
-	docker build -t instrumented_verilator .
+build: init
+	docker build -t instrumentedverilator .
 
 .PHONY: help
 help:
@@ -18,4 +24,6 @@ help:
 	@echo "build: Build the Docker image for instrumented Verilator"
 	@echo "all: Show this help message"
 
-all: help
+.PHONY: run
+run:
+	docker run -it --rm -v $(PWD)/testFiles:/testFiles --workdir=/testFiles instrumentedverilator /bin/bash
