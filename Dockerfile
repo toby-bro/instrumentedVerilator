@@ -43,7 +43,6 @@ RUN git fetch --tags
 RUN git checkout -b stable-branch $(git describe --tags `git rev-list --tags --max-count=1`)
 
 
-
 #Coverage report locaation
 ARG rebuildTests=unknown
 RUN mkdir coverage_reports coverage_tests
@@ -71,4 +70,3 @@ RUN ./bisonpre -d -v -o verilog.c verilog.y
 RUN cp verilog.c obj_opt/
 RUN cp verilog.y obj_opt/
 RUN rm -r obj_dbg
-

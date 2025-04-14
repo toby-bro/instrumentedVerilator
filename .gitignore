@@ -2,6 +2,7 @@ obj_dir/
 build/
 verilator/
 transfuzzTestFiles/
+coverage_reports/
 
 *.swp
 *.tmp
