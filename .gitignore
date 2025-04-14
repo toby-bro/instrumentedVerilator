@@ -1,0 +1,8 @@
+obj_dir/
+build/
+verilator/
+transfuzzTestFiles/
+
+*.swp
+*.tmp
+*.temp
