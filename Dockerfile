@@ -45,8 +45,6 @@ RUN git checkout -b stable-branch $(git describe --tags `git rev-list --tags --m
 
 #Coverage report locaation
 ARG rebuildTests=unknown
-RUN mkdir coverage_reports coverage_tests
-COPY testFiles ./coverage_tests
 
 #Instrumentation flags
 ENV CC=gcc

@@ -29,9 +29,9 @@ def main(test_path: str, src_path: str) -> None:
     for test_count, test in enumerate(test_numbers):
         # First Verilate
         verilator_cmd = f"""$VERILATOR_ROOT/bin/verilator --cc --binary -Wno-MULTIDRIVEN --Wno-UNOPTFLAT --Wno-NOLATCH --Wno-WIDTHTRUNC --Wno-CMPCONST --Wno-WIDTHEXPAND --Wno-UNSIGNED \
-                            /verilator/coverage_tests/transfuzzTestFiles/obj_dir_example_sim_{test}/top.sv \
-                            -CFLAGS '/verilator/coverage_tests/include -I/verilator/coverage_tests/transfuzzTestFiles/obj_dir_example_sim_{test} -g'\
-                            --Mdir /verilator/coverage_tests/transfuzzTestFiles/obj_dir_example_sim_{test}/obj_dir"""
+                            /testFiles/transfuzzTestFiles/obj_dir_example_sim_{test}/top.sv \
+                            -CFLAGS '/testFiles/include -I/testFiles/transfuzzTestFiles/obj_dir_example_sim_{test} -g'\
+                            --Mdir /testFiles/transfuzzTestFiles/obj_dir_example_sim_{test}/obj_dir"""
         p = subprocess.Popen([verilator_cmd], shell=True, cwd=src_path)
         p.wait()
 
@@ -43,12 +43,12 @@ def main(test_path: str, src_path: str) -> None:
         # For every 5 tests ran, or for every manually selected checkpoint, compile reports and give html report
         # if test_count % 5 == 0 and test_count != 0:
         if test_count in coverage_checkpoints:
-            gcovr_merge = f"gcovr --html -a '/verilator/coverage_reports/*.json' -o /verilator/coverage_reports/mergeReport_{test_count}_html.html"
+            gcovr_merge = f"gcovr --html -a '/testFiles/coverage_reports/*.json' -o /testFiles/coverage_reports/mergeReport_{test_count}_html.html"
             p = subprocess.Popen([gcovr_merge], shell=True, cwd=src_path)
             p.wait()
 
     # Third merge jsons and form html
-    gcovr_merge = f"gcovr --html --html-details -a '/verilator/coverage_reports/*.json' -o /verilator/coverage_reports/mergeReport_{test_count}_html.html"
+    gcovr_merge = f"gcovr --html --html-details -a '/testFiles/coverage_reports/*.json' -o /testFiles/coverage_reports/mergeReport_{test_count}_html.html"
     p = subprocess.Popen([gcovr_merge], shell=True, cwd=src_path)
     p.wait()
 
@@ -60,9 +60,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         'test_path',
-        default='/verilator/coverage_tests/transfuzzTestFiles',
+        default='/testFiles/transfuzzTestFiles',
         nargs='?',
-        help='Path to test directory (default: /verilator/coverage_tests/transfuzzTestFiles)',
+        help='Path to test directory (default: /testFiles/transfuzzTestFiles)',
     )
     parser.add_argument(
         'verilator_src_path',
