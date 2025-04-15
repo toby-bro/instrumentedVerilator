@@ -24,16 +24,8 @@ def process_test(test, test_path, src_path):
         p = subprocess.Popen([verilator_cmd], shell=True, cwd=src_path)
         p.wait()
 
-        # Second create html for the run - using the original command that worked
-        gcovr_cmd = f"gcovr --html -o {output_html} -e '(.*/)?(V3Coverage\.cpp|V3CoverageJoin\.cpp|V3EmitCMake\.cpp|V3EmitXml\.cpp|V3ExecGraph\.cpp|V3GraphTest\.cpp|V3HierBlock\.cpp|V3Trace\.cpp|V3TraceDecl\.cpp|.*\.h)$' --root /verilator/src"
-        p = subprocess.Popen([gcovr_cmd], shell=True, cwd=src_path)
-        p.wait()
-
-        # Return the path to the created HTML file
-        if os.path.exists(output_html):
-            return f"SUCCESS:{test}:{output_html}"
-        else:
-            return f"FAILED:{test}:No output file created"
+        # Don't generate HTML for each test, just return success if verilator completes
+        return f"SUCCESS:{test}"
 
     except Exception as e:
         print(f"Exception in worker process for test {test}: {e}")
@@ -62,7 +54,6 @@ def main(test_path: str, src_path: str) -> None:
     # Create directory for coverage reports if it doesn't exist
     os.makedirs('/testFiles/coverage_reports', exist_ok=True)
 
-    coverage_checkpoints = [i for i in range(0, len(test_numbers), 5)]
     successful_tests = []
 
     # Set up signal handler for graceful termination
@@ -90,24 +81,14 @@ def main(test_path: str, src_path: str) -> None:
                 print(f"Completed test {completed_tests}/{len(test_numbers)}: {result}")
 
                 if result.startswith("SUCCESS"):
-                    successful_tests.append(result.split(':')[2])  # Store the output file path
+                    successful_tests.append(test)  # Store the test number
 
-                # Check if we need to create a checkpoint report
-                if i in coverage_checkpoints:
-                    print(f"Creating checkpoint report at test {i}")
-                    if successful_tests:
-                        # Use the original command format that worked
-                        gcovr_merge = f"gcovr --html -o /testFiles/coverage_reports/mergeReport_{i}_html.html --root /verilator/src"
-                        p = subprocess.Popen([gcovr_merge], shell=True, cwd=src_path)
-                        p.wait()
             except Exception as exc:
                 print(f"Test {test} generated an exception: {exc}")
 
-    # Create final report using the original command that worked
-    print("Creating final merged report")
-    gcovr_merge = (
-        "gcovr --html --html-details -o /testFiles/coverage_reports/mergeReport_final_html.html --root /verilator/src"
-    )
+    # Create final report only at the end
+    print("Creating final coverage report")
+    gcovr_merge = "gcovr --html --html-details -f '.*\\.cpp$' -e '(.*/)?(V3Coverage\\.cpp|V3CoverageJoin\\.cpp|V3EmitCMake\\.cpp|V3EmitXml\\.cpp|V3ExecGraph\\.cpp|V3GraphTest\\.cpp|V3HierBlock\\.cpp|V3Trace\\.cpp|V3TraceDecl\\.cpp)$' -o /testFiles/coverage_reports/coverage_report.html --root /verilator/src"
     p = subprocess.Popen([gcovr_merge], shell=True, cwd=src_path)
     p.wait()
 
@@ -135,12 +116,4 @@ if __name__ == "__main__":
     try:
         main(args.test_path, args.verilator_src_path)
     except KeyboardInterrupt:
-        print("\nScript interrupted by user. Generating final report with data collected so far...")
-        try:
-            # Generate final report with data collected
-            gcovr_merge = "gcovr --html -o /testFiles/coverage_reports/partial_report_html.html --root /verilator/src"
-            subprocess.run(gcovr_merge, shell=True, cwd=args.verilator_src_path)
-            print("Partial report generated: /testFiles/coverage_reports/partial_report_html.html")
-        except Exception as e:
-            print(f"Could not generate partial report: {e}")
-        print("Exiting.")
+        print("\nScript interrupted by user. Exiting.")
