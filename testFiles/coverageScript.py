@@ -8,7 +8,7 @@ import signal
 import subprocess
 
 
-def process_test(test, test_path, src_path):
+def process_test(test: str, test_path: str, src_path: str) -> str:
     """Process a single test in parallel using the original working commands"""
     try:
         # Create unique output files for this test
@@ -17,15 +17,27 @@ def process_test(test, test_path, src_path):
         # Use the original commands that worked correctly
         # First Verilate
         verilator_cmd = f"""$VERILATOR_ROOT/bin/verilator --cc --binary -Wno-MULTIDRIVEN --Wno-UNOPTFLAT --Wno-NOLATCH --Wno-WIDTHTRUNC --Wno-CMPCONST --Wno-WIDTHEXPAND --Wno-UNSIGNED \
-                            /testFiles/transfuzzTestFiles/obj_dir_example_sim_{test}/top.sv \
-                            -CFLAGS '/testFiles/include -I/testFiles/transfuzzTestFiles/obj_dir_example_sim_{test} -g'\
-                            --Mdir /testFiles/transfuzzTestFiles/obj_dir_example_sim_{test}/obj_dir"""
+                            {test_path}/obj_dir_example_sim_{test}/top.sv \
+                            -CFLAGS '-I/testFiles/include -I{test_path}/obj_dir_example_sim_{test} -g' \
+                            --Mdir {test_path}/obj_dir_example_sim_{test}/obj_dir"""
 
+        # Compile the test
         p = subprocess.Popen([verilator_cmd], shell=True, cwd=src_path)
         p.wait()
+        if p.returncode != 0:
+            return f"ERROR:{test}:Verilator compilation failed"
 
-        # Don't generate HTML for each test, just return success if verilator completes
-        return f"SUCCESS:{test}"
+        # Execute the compiled binary to generate coverage data
+        binary_path = f"{test_path}/obj_dir_example_sim_{test}/obj_dir/Vtop"
+        if os.path.exists(binary_path):
+            execute_cmd = f"{binary_path}"
+            p = subprocess.Popen([execute_cmd], shell=True, cwd=src_path)
+            p.wait()
+            if p.returncode != 0:
+                return f"ERROR:{test}:Execution failed"
+            return f"SUCCESS:{test}"
+        else:
+            return f"ERROR:{test}:Binary not found"
 
     except Exception as e:
         print(f"Exception in worker process for test {test}: {e}")
@@ -73,7 +85,7 @@ def main(test_path: str, src_path: str) -> None:
 
         completed_tests = 0
         for future in concurrent.futures.as_completed(future_to_test):
-            i, test = future_to_test[future]
+            _, test = future_to_test[future]
             completed_tests += 1
 
             try:
@@ -100,7 +112,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         'test_path',
-        default='/testFiles/transfuzzTestFiles',
+        default='/testFiles/verismith',
         nargs='?',
         help='Path to test directory (default: /testFiles/transfuzzTestFiles)',
     )
