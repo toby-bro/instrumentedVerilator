@@ -5,7 +5,10 @@ transfuzzTestFiles/
 verismith/
 coverage_reports/
 
+uv.lock
+
 *.swp
 *.tmp
 *.temp
 *.bak
+*.dat
