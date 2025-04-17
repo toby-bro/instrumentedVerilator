@@ -34,7 +34,10 @@ getCoverage:
 
 .PHONY: backupCoverage
 backupCoverage:
-	mv testFiles/coverage_reports coverage_reports.bak/$(shell printf %03d $(find testFiles/verismith/ -name 'obj_dir' -type d | wc -l))_files && mkdir testFiles/coverage_reports
+	mv testFiles/coverage_reports coverage_reports.bak/$(shell printf %03d $$(find testFiles/verismith/ -name 'obj_dir' -type d | wc -l))_files && mkdir testFiles/coverage_reports
+
+.PHONY: dumpCoverage
+dumpCoverage: getCoverage backupCoverage
 
 .PHONY: cleanVerismith
 cleanVerismith:
@@ -54,6 +57,7 @@ syncCoverage: clearCoverage
 		make getCoverage; \
 		make backupCoverage; \
 	done
+	make dumpCoverage
 
 .PHONY: plotCoverage
 plotCoverage: syncCoverage
