@@ -1,3 +1,6 @@
+#TEST_FILES_DIR ?= transfuzzTestFiles
+TEST_FILES_DIR ?= verismith
+
 all: run
 
 .PHONY: init
@@ -9,7 +12,7 @@ init:
 	fi
 
 .PHONY: clean
-clean: cleanVerismith clearCoverage
+clean: cleanTransfuzzTestFiles cleanVerismith clearCoverage
 	rm -rf build obj_dir
 
 .PHONY: build
@@ -34,10 +37,14 @@ getCoverage:
 
 .PHONY: backupCoverage
 backupCoverage:
-	mv testFiles/coverage_reports coverage_reports.bak/$(shell printf %03d $$(find testFiles/verismith/ -name 'obj_dir' -type d | wc -l))_files && mkdir testFiles/coverage_reports
+	mv testFiles/coverage_reports coverage_reports.bak/$(shell printf "%03d" $$(find testFiles/$(TEST_FILES_DIR)/ -name 'obj_dir' -type d | wc -l))_files && mkdir testFiles/coverage_reports
 
 .PHONY: dumpCoverage
 dumpCoverage: getCoverage backupCoverage
+
+.PHONY: cleanTransfuzzTestFiles
+cleanTransfuzzTestFiles:
+	rm -rf testFiles/transfuzzTestFiles/obj_dir_example_sim_*/obj_dir
 
 .PHONY: cleanVerismith
 cleanVerismith:
@@ -53,12 +60,16 @@ clearCoverage:
 
 .PHONY: syncCoverage
 syncCoverage: clearCoverage
-	@while [ $$(find testFiles/verismith/ -name 'obj_dir' -type d | wc -l) -lt $$(find testFiles/verismith -type f -name 'top.sv' | wc -l) ]; do \
+	@while [ $$(find testFiles/$(TEST_FILES_DIR)/ -name 'obj_dir' -type d | wc -l) -lt $$(find testFiles/$(TEST_FILES_DIR) -type f -name 'top.sv' | wc -l) ]; do \
 		make getCoverage; \
 		make backupCoverage; \
 	done
 	make dumpCoverage
 
 .PHONY: plotCoverage
-plotCoverage: syncCoverage
+plotCoverage:
 	uv run testFiles/plotCoverage.py
+
+.PHONY: server
+server:
+	uv run python3.13 -m http.server 8080
