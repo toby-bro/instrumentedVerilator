@@ -27,3 +27,7 @@ help:
 .PHONY: run
 run:
 	docker run -it --rm -v $(PWD)/testFiles:/testFiles --workdir=/testFiles instrumentedverilator /bin/bash
+
+.PHONY: tobemodified
+tobemodified:
+	@echo 'mv coverage_reports ../coverage_reports.bak/$$(find verismith/ -name 'obj_dir' -type d | wc -l)_files && mkdir coverage_reports'
