@@ -54,6 +54,10 @@ cleanVerismith:
 getCoverageCmd:
 	@echo "gcovr --html --html-details -f '.*\.cpp$$' -e '(.*/)?(V3Coverage\.cpp|V3CoverageJoin\.cpp|V3EmitCMake\.cpp|V3EmitXml\.cpp|V3ExecGraph\.cpp|V3GraphTest\.cpp|V3HierBlock\.cpp|V3Trace\.cpp|V3TraceDecl\.cpp)$' -o /testFiles/coverage_reports/coverage_report.html --root /verilator/src"
 
+.PHONY: getFastCovCmd
+getFastCovCmd:
+	@echo "to be improved fastcov -o /testFiles/coverage_reports/coverage_report.json --include '.*\\.cpp$$' --exclude '(.*/)?(V3Coverage\\.cpp|V3CoverageJoin\\.cpp|V3EmitCMake\\.cpp|V3EmitXml\\.cpp|V3ExecGraph\\.cpp|V3GraphTest\\.cpp|V3HierBlock\\.cpp|V3Trace\\.cpp|V3TraceDecl\\.cpp)$$' --lcov --directory /verilator/src"
+
 .PHONY: clearCoverage
 clearCoverage:
 	find . -name "*.dat" -type f -exec rm -f {} +
@@ -73,3 +77,7 @@ plotCoverage:
 .PHONY: server
 server:
 	uv run python3.13 -m http.server 8080
+
+.PHONY: execOneFile
+execOneFile:
+	@echo '$$VERILATOR_ROOT/bin/verilator --cc --binary' -Wno-MULTIDRIVEN --Wno-UNOPTFLAT --Wno-NOLATCH --Wno-WIDTHTRUNC --Wno-CMPCONST --Wno-WIDTHEXPAND --Wno-UNSIGNED -CFLAGS "'-I/testFiles/include -I -g'" file.sv
