@@ -33,7 +33,7 @@ run:
 
 .PHONY: getCoverage
 getCoverage:
-	docker exec -it $(shell docker ps -q --filter ancestor=instrumentedverilator) /bin/bash -c "gcovr --html --html-details -f '.*\.cpp$$' -e '(.*/)?(V3Coverage\.cpp|V3CoverageJoin\.cpp|V3EmitCMake\.cpp|V3EmitXml\.cpp|V3ExecGraph\.cpp|V3GraphTest\.cpp|V3HierBlock\.cpp|V3Trace\.cpp|V3TraceDecl\.cpp)$$' -o /testFiles/coverage_reports/coverage_report.html --root /verilator/src"
+	docker exec -it $(shell docker ps -q --filter ancestor=instrumentedverilator) /bin/bash -c "gcovr --html --html-details -f '.*\.cpp$$' -e '(.*/)?(V3Coverage\.cpp|V3CoverageJoin\.cpp|V3EmitCMake\.cpp|V3EmitXml\.cpp|V3ExecGraph\.cpp|V3GraphTest\.cpp|V3HierBlock\.cpp|V3Trace\.cpp|V3TraceDecl\.cpp|V3EmitV\.cpp|V3TSP\.cpp|V3Scoreboard\.cpp|V3Stats\.cpp|V3ProtectLib\.cpp|V3Broken\.cpp|V3Interface\.cpp)$$' -o /testFiles/coverage_reports/coverage_report.html --root /verilator/src"
 
 .PHONY: backupCoverage
 backupCoverage:
@@ -80,4 +80,4 @@ server:
 
 .PHONY: execOneFile
 execOneFile:
-	@echo '$$VERILATOR_ROOT/bin/verilator --cc --binary' -Wno-MULTIDRIVEN --Wno-UNOPTFLAT --Wno-NOLATCH --Wno-WIDTHTRUNC --Wno-CMPCONST --Wno-WIDTHEXPAND --Wno-UNSIGNED -CFLAGS "'-I/testFiles/include -I -g'" file.sv
+	@echo '$$VERILATOR_ROOT/bin/verilator --cc --binary' -Wno-MULTIDRIVEN --Wno-UNOPTFLAT --Wno-NOLATCH --Wno-WIDTHTRUNC --Wno-CMPCONST --Wno-WIDTHEXPAND --Wno-UNSIGNED -CFLAGS "'-I/testFiles/include -I -g'" --threads 8 --comp-limit-blocks 10 file.sv
