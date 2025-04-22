@@ -45,8 +45,8 @@ help:
 	@echo "  make cleanVerismith           - Clean obj_dirs from verismith"
 	@echo ""
 	@echo "Utility targets:"
-	@echo "  make server      - Start HTTP server on port 8080 for viewing reports"
-	@echo "  make execOneFile - Print command to execute a single Verilator file (usefull for running in the container(started by the make run command))"
+	@echo "  make server            - Start HTTP server on port 8080 for viewing reports"
+	@echo "  make getExecOneFileCmd - Print command to execute a single Verilator file (usefull for running in the container(started by the make run command))"
 	@echo ""
 	@echo "Current test directory: $(TEST_FILES_DIR) (set with TEST_FILES_DIR=dirname) can be changed, it is usefull for the syncCoverage command to know what are the files that are intersting to look at"
 
@@ -101,6 +101,6 @@ plotCoverage:
 server:
 	uv run python3.13 -m http.server 8080
 
-.PHONY: execOneFile
-execOneFile:
+.PHONY: getExecOneFileCmd
+getExecOneFileCmd:
 	@echo '$$VERILATOR_ROOT/bin/verilator --cc --binary' -Wno-MULTIDRIVEN --Wno-UNOPTFLAT --Wno-NOLATCH --Wno-WIDTHTRUNC --Wno-CMPCONST --Wno-WIDTHEXPAND --Wno-UNSIGNED -CFLAGS "'-I/testFiles/include -I -g'" --threads 8 --comp-limit-blocks 10 file.sv

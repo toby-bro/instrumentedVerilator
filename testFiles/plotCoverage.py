@@ -82,7 +82,7 @@ def plot_coverage_values(file_paths: list[str], *, is_synced: bool = False) -> N
 
     # Sort all data based on lines_coverage
     sorted_data = sorted(zip(lines_coverage, functions_coverage, branches_coverage, file_indices, strict=False))
-    lines_coverage, functions_coverage, branches_coverage, file_indices = zip(*sorted_data, strict=False)
+    lines_coverage, functions_coverage, branches_coverage, file_indices = zip(*sorted_data, strict=False)  # type: ignore[assignment]
 
     plt.xkcd()
 
