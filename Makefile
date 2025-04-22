@@ -1,7 +1,7 @@
 #TEST_FILES_DIR ?= transfuzzTestFiles
 TEST_FILES_DIR ?= verismith
 
-all: run
+all: help
 
 .PHONY: init
 init:
@@ -21,11 +21,34 @@ build: init
 
 .PHONY: help
 help:
-	@echo "Usage: make init | make clean | make build"
-	@echo "init: Clone the verilator repository"
-	@echo "clean: Remove build and obj_dir directories"
-	@echo "build: Build the Docker image for instrumented Verilator"
-	@echo "all: Show this help message"
+	@echo "Instrumented Verilator Makefile"
+	@echo ""
+	@echo "Main targets:"
+	@echo "  make all         - Default target (currently runs 'run')"
+	@echo "  make init        - Clone the verilator repository if not exists"
+	@echo "  make build       - Build the Docker image for instrumented Verilator"
+	@echo "  make clean       - Remove build, obj_dir and clear coverage data"
+	@echo "  make run         - Run the Docker container with testFiles mounted"
+	@echo ""
+	@echo "Coverage targets:"
+	@echo "  make getCoverage       - Generate HTML coverage report from inside Docker"
+	@echo "  make backupCoverage    - Backup current coverage reports to timestamped directory(by number of files executed)"
+	@echo "  make dumpCoverage      - Get and backup coverage in one step"
+	@echo "  make clearCoverage     - Remove all .dat coverage files"
+	@echo "  make syncCoverage      - Continuously generate coverage until all tests are processed"
+	@echo "  make plotCoverage      - Run script to plot coverage data"
+	@echo "  make getCoverageCmd    - Print the gcovr command for coverage report generation"
+	@echo "  make getFastCovCmd     - Print the fastcov command for faster coverage processing"
+	@echo ""
+	@echo "Cleanup targets:"
+	@echo "  make cleanTransfuzzTestFiles  - Clean obj_dirs from transfuzzTestFiles"
+	@echo "  make cleanVerismith           - Clean obj_dirs from verismith"
+	@echo ""
+	@echo "Utility targets:"
+	@echo "  make server      - Start HTTP server on port 8080 for viewing reports"
+	@echo "  make execOneFile - Print command to execute a single Verilator file (usefull for running in the container(started by the make run command))"
+	@echo ""
+	@echo "Current test directory: $(TEST_FILES_DIR) (set with TEST_FILES_DIR=dirname) can be changed, it is usefull for the syncCoverage command to know what are the files that are intersting to look at"
 
 .PHONY: run
 run:
