@@ -1,8 +1,8 @@
 obj_dir/
 build/
 verilator/
-transfuzzTestFiles/
-verismith/
+testFiles/transfuzzTestFiles/
+testFiles/verismith/
 coverage_reports/
 
 uv.lock
@@ -12,3 +12,7 @@ uv.lock
 *.temp
 *.bak
 *.dat
+
+!coverage_reports.bak
+coverage_reports.bak/*
+!coverage_reports.bak/comparison

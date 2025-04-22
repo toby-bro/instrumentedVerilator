@@ -95,9 +95,13 @@ def plot_coverage_values(file_paths: list[str], *, is_synced: bool = False) -> N
     ax.set_xticks(range(len(file_indices)))
     ax.set_xticklabels(file_indices, rotation=65, ha='right')
 
-    ax.set_xlabel('Number of Files')
     ax.set_ylabel('Coverage (%)')
-    ax.set_title('Coverage vs. Number of Files')
+    if is_synced:
+        ax.set_title('Coverage vs. Number of Files')
+        ax.set_xlabel('Number of Files')
+    else:
+        ax.set_title('Coverage')
+        ax.set_xlabel('Test files used')
 
     ax.legend()
 
@@ -107,22 +111,43 @@ def plot_coverage_values(file_paths: list[str], *, is_synced: bool = False) -> N
     plt.show()
 
 
-def find_coverage_reports(directory: str, *, is_verismith: bool = False, is_transfuzz: bool = False) -> list[str]:
+def find_coverage_reports(
+    directory: str,
+    *,
+    is_verismith: bool = False,
+    is_transfuzz: bool = False,
+    is_comparison: bool = False,
+    is_perso: bool = False,
+) -> list[str]:
     if is_verismith:
         pattern = os.path.join(directory, 'verismith-synced', '*_files', 'coverage_report.html')
     elif is_transfuzz:
         pattern = os.path.join(directory, 'transfuzz-synced', '*_files', 'coverage_report.html')
-    else:
+    elif is_comparison:
+        pattern = os.path.join(directory, 'comparison', '*', 'coverage_report.html')
+    elif is_perso:
         pattern = os.path.join(directory, 'perso', '*', 'coverage_report.html')
+    else:
+        raise ValueError('At least one of is_verismith, is_transfuzz, is_comparison, or is_perso must be True.')
     return glob.glob(pattern)
 
 
 if __name__ == '__main__':
     directory = './coverage_reports.bak/'
     is_verismith = False
-    is_transfuzz = True
-    assert not (is_verismith and is_transfuzz), 'Both is_verismith and is_transfuzz cannot be True at the same time.'
-    file_paths = find_coverage_reports(directory, is_verismith=is_verismith, is_transfuzz=is_transfuzz)
+    is_transfuzz = False
+    is_comparison = True
+    is_perso = False
+    assert 1 == sum(
+        1 if i is True else 0 for i in [is_verismith, is_transfuzz, is_comparison, is_perso]
+    ), 'Only one of is_verismith, is_transfuzz, or is_comparison can be True.'
+    file_paths = find_coverage_reports(
+        directory,
+        is_verismith=is_verismith,
+        is_transfuzz=is_transfuzz,
+        is_comparison=is_comparison,
+        is_perso=is_perso,
+    )
     logger.debug(f'Found {len(file_paths)} coverage report files.')
     logger.debug(file_paths)
 
