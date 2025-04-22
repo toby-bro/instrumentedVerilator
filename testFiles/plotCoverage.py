@@ -55,8 +55,8 @@ def is_first_line(cells: list[Tag]) -> bool:
     return len(cells) == 4 and cells[1].text == 'Exec'
 
 
-def plot_coverage_values(file_paths: list[str]) -> None:
-    num_files = []
+def plot_coverage_values(file_paths: list[str], *, is_synced: bool = False) -> None:
+    file_indices = []
     lines_coverage = []
     functions_coverage = []
     branches_coverage = []
@@ -64,20 +64,36 @@ def plot_coverage_values(file_paths: list[str]) -> None:
     logger.debug(f'File paths sorted: {file_paths}')
 
     for file_path in file_paths:
-        num_file = int(file_path.split('/')[-2].split('_')[0])
-        num_files.append(num_file)
+        if is_synced:
+            file_index = file_path.split('/')[-2].split('_')[0]
+        else:
+            file_index = file_path.split('/')[-2]
 
         coverage_values = extract_coverage_values(file_path)
+        # Skip entries where all coverage values are 0
+        if coverage_values['Lines'] == 0 and coverage_values['Functions'] == 0 and coverage_values['Branches'] == 0:
+            logger.debug(f'Skipping {file_index} because all coverage values are 0')
+            continue
+
+        file_indices.append(file_index)
         lines_coverage.append(coverage_values['Lines'])
         functions_coverage.append(coverage_values['Functions'])
         branches_coverage.append(coverage_values['Branches'])
 
+    # Sort all data based on lines_coverage
+    sorted_data = sorted(zip(lines_coverage, functions_coverage, branches_coverage, file_indices, strict=False))
+    lines_coverage, functions_coverage, branches_coverage, file_indices = zip(*sorted_data, strict=False)
+
     plt.xkcd()
 
     _, ax = plt.subplots()
-    ax.plot(num_files, lines_coverage, label='Lines', marker='o')
-    ax.plot(num_files, functions_coverage, label='Functions', marker='s')
-    ax.plot(num_files, branches_coverage, label='Branches', marker='^')
+    ax.plot(range(len(file_indices)), lines_coverage, label='Lines', marker='o')
+    ax.plot(range(len(file_indices)), functions_coverage, label='Functions', marker='s')
+    ax.plot(range(len(file_indices)), branches_coverage, label='Branches', marker='^')
+
+    # Set diagonal labels for x-axis
+    ax.set_xticks(range(len(file_indices)))
+    ax.set_xticklabels(file_indices, rotation=65, ha='right')
 
     ax.set_xlabel('Number of Files')
     ax.set_ylabel('Coverage (%)')
@@ -85,18 +101,29 @@ def plot_coverage_values(file_paths: list[str]) -> None:
 
     ax.legend()
 
+    # Add tight_layout to ensure the rotated labels fit
+    plt.tight_layout()
+
     plt.show()
 
 
-def find_coverage_reports(directory: str) -> list[str]:
-    pattern = os.path.join(directory, '*_files', 'coverage_report.html')
+def find_coverage_reports(directory: str, *, is_verismith: bool = False, is_transfuzz: bool = False) -> list[str]:
+    if is_verismith:
+        pattern = os.path.join(directory, 'verismith-synced', '*_files', 'coverage_report.html')
+    elif is_transfuzz:
+        pattern = os.path.join(directory, 'transfuzz-synced', '*_files', 'coverage_report.html')
+    else:
+        pattern = os.path.join(directory, 'perso', '*', 'coverage_report.html')
     return glob.glob(pattern)
 
 
-directory = './coverage_reports.bak'
+if __name__ == '__main__':
+    directory = './coverage_reports.bak/'
+    is_verismith = False
+    is_transfuzz = True
+    assert not (is_verismith and is_transfuzz), 'Both is_verismith and is_transfuzz cannot be True at the same time.'
+    file_paths = find_coverage_reports(directory, is_verismith=is_verismith, is_transfuzz=is_transfuzz)
+    logger.debug(f'Found {len(file_paths)} coverage report files.')
+    logger.debug(file_paths)
 
-file_paths = find_coverage_reports(directory)
-logger.debug(f'Found {len(file_paths)} coverage report files.')
-logger.debug(file_paths)
-
-plot_coverage_values(file_paths)
+    plot_coverage_values(file_paths, is_synced=is_verismith or is_transfuzz)
