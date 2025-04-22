@@ -5,11 +5,8 @@ all: help
 
 .PHONY: init
 init:
-	if [ ! -d "verilator" ]; then \
-		git clone https://github.com/verilator/verilator; \
-	else \
-		echo "verilator directory already exists. Skipping clone."; \
-	fi
+    git submodule init
+    git submodule update
 
 .PHONY: clean
 clean: cleanTransfuzzTestFiles cleanVerismith clearCoverage
