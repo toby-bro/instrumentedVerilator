@@ -13,5 +13,7 @@ uv.lock
 *.dat
 
 !coverage_reports.bak
-coverage_reports.bak/*
-!coverage_reports.bak/comparison
+coverage_reports.bak/yosys/*
+coverage_reports.bak/verilator/*
+!coverage_reports.bak/yosys/comparison
+!coverage_reports.bak/verilator/comparison
