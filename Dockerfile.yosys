@@ -1,0 +1,42 @@
+FROM debian:bookworm-slim
+
+# Prerequisites
+RUN apt-get update && apt-get -y install \
+    bison \
+    build-essential \
+    clang \
+    flex \
+    g++ \
+    gcc \
+    gcovr \
+    git \
+    graphviz \
+    lcov \
+    libffi-dev \
+    libreadline-dev \
+    pkg-config \
+    python3 \
+    tcl-dev \
+    xdot \
+    zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Clone Yosys repository
+COPY yosys /yosys
+WORKDIR /yosys
+
+# Instrumentation flags
+ENV CC=gcc
+ENV CXX=g++
+ENV CFLAGS="-fprofile-arcs -ftest-coverage"
+ENV CXXFLAGS="-fprofile-arcs -ftest-coverage"
+ENV LDFLAGS="-lgcov"
+
+# Build Yosys with coverage instrumentation
+RUN make config-gcc
+RUN make -j `nproc`
+RUN make install
+
+# Set environment variables
+ENV PREFIX="/yosys"
+ENV PATH="/yosys/bin:${PATH}"
