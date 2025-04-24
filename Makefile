@@ -6,7 +6,7 @@ all: help
 .PHONY: init
 init:
 	git submodule init
-	git submodule update --recursive
+	git submodule update --init --recursive
 
 .PHONY: clean
 clean: cleanTransfuzzTestFiles cleanVerismith clearCoverage
