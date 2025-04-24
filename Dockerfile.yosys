@@ -7,13 +7,18 @@ RUN apt-get update && apt-get -y install \
     clang \
     flex \
     g++ \
+    gawk \
     gcc \
     gcovr \
     git \
     graphviz \
     lcov \
+    libboost-filesystem-dev \
+    libboost-python-dev \
+    libboost-system-dev \
     libffi-dev \
     libreadline-dev \
+    lld \
     pkg-config \
     python3 \
     tcl-dev \
