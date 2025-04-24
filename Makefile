@@ -5,6 +5,7 @@ all: help
 
 .PHONY: init
 init:
+	@if [ ! -d "yosys" ]; then git clone https://github.com/YosysHQ/yosys.git ; fi
 	git submodule init
 	git submodule update --init --recursive
 
