@@ -17,7 +17,7 @@ build: init build-verilator build-yosys
 
 .PHONY: build-verilator
 build-verilator: init
-	docker build -t instrumentedverilator .
+	docker build -t instrumentedverilator -f Dockerfile.verilator .
 
 .PHONY: build-yosys
 build-yosys: init
