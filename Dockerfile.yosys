@@ -28,19 +28,23 @@ RUN apt-get update && apt-get -y install \
 
 # Clone Yosys repository
 COPY yosys /yosys
-WORKDIR /yosys
 
+# compile ABC without compile flags...
+WORKDIR /yosys/abc
+RUN make
+
+WORKDIR /yosys
 # Instrumentation flags
 ENV CC=gcc
 ENV CXX=g++
 ENV CFLAGS="-fprofile-arcs -ftest-coverage"
 ENV CXXFLAGS="-fprofile-arcs -ftest-coverage"
-ENV LDFLAGS="-lgcov"
+ENV LINKFLAGS="-lgcov --coverage" # yosys calls these flags such
 
 # Build Yosys with coverage instrumentation
 RUN make config-gcc
-RUN make -j `nproc`
-RUN make install
+RUN make -j `nproc` ABCEXTERNAL=/scratch/jnstrauss/instrumentedVerilator/yosys/abc/abc
+RUN make install ABCEXTERNAL=/scratch/jnstrauss/instrumentedVerilator/yosys/abc/abc
 
 # Set environment variables
 ENV PREFIX="/yosys"
