@@ -11,6 +11,7 @@ uv.lock
 *.temp
 *.bak
 *.dat
+*.dmp
 
 !coverage_reports.bak
 coverage_reports.bak/yosys/*
