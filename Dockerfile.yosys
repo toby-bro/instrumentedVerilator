@@ -29,7 +29,7 @@ RUN apt-get update && apt-get -y install \
 RUN pip3 install git+https://github.com/RPGillespie6/fastcov.git --break-system-packages
 
 # Clone Yosys repository
-COPY yosys /yosys
+RUN git clone https://github.com/YosysHQ/yosys.git /yosys
 
 # compile ABC without compile flags...
 WORKDIR /yosys/abc

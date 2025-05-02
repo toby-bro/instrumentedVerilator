@@ -38,7 +38,7 @@ RUN apt-get update && apt-get -y install \
 RUN pip3 install git+https://github.com/RPGillespie6/fastcov.git --break-system-packages
 
 #Building proscess
-COPY verilator /verilator
+RUN git clone https://github.com/verilator/verilator.git /verilator
 WORKDIR /verilator
 
 RUN git fetch --tags
