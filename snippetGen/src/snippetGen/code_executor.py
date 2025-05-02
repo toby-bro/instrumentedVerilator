@@ -1,5 +1,6 @@
 import logging
 import os
+import re  # Import regex module
 import shutil
 import subprocess
 from typing import Optional, Tuple
@@ -13,7 +14,7 @@ class CodeExecutor:
 
     def write_code(self, file_path: str, code: str) -> None:
         """
-        Writes the given code content to the specified file path.
+        Writes the given code content to the specified file path, ensuring a trailing newline.
 
         Args:
             file_path: The path where the code should be saved.
@@ -23,8 +24,12 @@ class CodeExecutor:
             IOError: If writing to the file fails.
         """
         try:
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            with open(file_path, 'w') as f:
+            if os.path.dirname(file_path) != '':
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            # Ensure the code ends with a newline
+            if not code.endswith('\n'):
+                code += '\n'
+            with open(file_path, 'w', encoding='utf-8') as f:
                 f.write(code)
             logger.info(f'Code successfully written to: {file_path}')
         except Exception as e:
@@ -38,23 +43,44 @@ class CodeExecutor:
         logger.error(f"'{name}' command not found. Please ensure it is installed and in your PATH.")
         return None
 
-    def _get_top_module_name(self, verilog_file_path: str) -> Optional[str]:
-        """Attempts to guess the top module name from the filename."""
+    def _guess_target_module_name_from_filename(self, verilog_file_path: str) -> Optional[str]:
+        """Attempts to guess the target module name from the filename (for LLM prompts)."""
         base = os.path.basename(verilog_file_path)
         name, ext = os.path.splitext(base)
-        if ext.lower() == '.v':
-            # Basic assumption: filename matches top module name
-            # More robust parsing could be added here if needed
+        # Allow .v and potentially other Verilog extensions like .sv
+        if ext.lower() in ['.v', '.sv']:
             return name
-        logger.warning(f"Could not determine top module name from filename '{base}'. Assuming 'top'.")
+        logger.warning(f"Could not determine target module name from filename '{base}'. Assuming 'top'.")
         return 'top'  # Default fallback
+
+    def _extract_verilog_module_name(self, verilog_file_path: str) -> Optional[str]:
+        """Extracts the first module name found in a Verilog file."""
+        try:
+            with open(verilog_file_path, 'r', encoding='utf-8') as f:
+                # Read first few lines, should be enough for module declaration
+                content = f.read(2048)  # Read up to 2KB
+            # Regex to find 'module <name> ;' or 'module <name> (...);'
+            # It captures the module name (alphanumeric + underscore)
+            match = re.search(r'^\s*module\s+([a-zA-Z_]\w*)\s*(?:#\(.*?\))?\s*(?:\(.*\))?\s*;', content, re.MULTILINE)
+            if match:
+                module_name = match.group(1)
+                logger.info(f"Extracted module name '{module_name}' from {verilog_file_path}")
+                return module_name
+            logger.error(f'Could not find module declaration in {verilog_file_path}')
+            return None
+        except FileNotFoundError:
+            logger.error(f'File not found when trying to extract module name: {verilog_file_path}')
+            return None
+        except Exception as e:
+            logger.error(f'Error reading file {verilog_file_path} to extract module name: {e}')
+            return None
 
     def compile_verilog(  # noqa: C901
         self,
         generated_v_path: str,
         target_v_path: str,
         sim_main_cpp_path: str,
-    ) -> Tuple[bool, Optional[str], str, str]:
+    ) -> Tuple[bool, Optional[str], str, str, Optional[str]]:
         """
         Compiles the generated Verilog testbench with the target module using Verilator.
 
@@ -69,34 +95,49 @@ class CodeExecutor:
             - Optional[str]: Path to the generated executable if successful, None otherwise.
             - str: stdout from Verilator compilation.
             - str: stderr from Verilator compilation.
+            - Optional[str]: The determined top module name used for compilation.
         """
         output_dir = os.path.dirname(generated_v_path)
-        obj_dir = os.path.join(output_dir, 'obj_dir')
-        top_module = self._get_top_module_name(target_v_path)
+        obj_dir = os.path.join(output_dir or '.', 'obj_dir')  # Use '.' if output_dir is empty
+
+        # Determine the top module name from the *generated* testbench file
+        top_module = self._extract_verilog_module_name(generated_v_path)
         if not top_module:
-            return False, None, '', 'Could not determine top module name.'
+            error_msg = f'Could not extract module name from generated Verilog file: {generated_v_path}'
+            logger.error(error_msg)
+            return False, None, '', error_msg, None
+
+        # Executable name is based on the extracted top module (testbench)
         executable_name = f'V{top_module}'
         executable_path = os.path.join(obj_dir, executable_name)
 
         verilator_exe = self._find_executable('verilator')
         if not verilator_exe:
-            return False, None, '', 'Verilator executable not found.'
+            return (
+                False,
+                None,
+                '',
+                'Verilator executable not found.',
+                top_module,
+            )  # Return determined top_module even on failure
 
         # Ensure input files exist
         if not os.path.exists(target_v_path):
             error_msg = f'Target Verilog file not found: {target_v_path}'
             logger.error(error_msg)
-            return False, None, '', error_msg
+            return False, None, '', error_msg, top_module
         if not os.path.exists(generated_v_path):
             error_msg = f'Generated Verilog file not found: {generated_v_path}'
             logger.error(error_msg)
-            return False, None, '', error_msg
+            # Cannot determine top_module if generated file doesn't exist
+            return False, None, '', error_msg, None
         if not os.path.exists(sim_main_cpp_path):
             error_msg = f'Simulation driver C++ file not found: {sim_main_cpp_path}'
             logger.error(error_msg)
-            return False, None, '', error_msg
+            return False, None, '', error_msg, top_module
 
         # --- Verilator Compilation Step ---
+        # Use the extracted top_module name here
         compile_command = [
             verilator_exe,
             '--cc',
@@ -105,9 +146,9 @@ class CodeExecutor:
             '-j',
             '0',
             '--top-module',
-            top_module,
+            top_module,  # Use extracted name
             '-o',
-            executable_name,
+            executable_name,  # Use name based on extracted top_module
             '--Mdir',
             obj_dir,
             sim_main_cpp_path,
@@ -143,25 +184,27 @@ class CodeExecutor:
 
             if compile_process.returncode != 0:
                 logger.error(f'Verilator compilation failed with return code {compile_process.returncode}.')
-                return False, None, compile_stdout, compile_stderr
+                # Return determined top_module even on failure
+                return False, None, compile_stdout, compile_stderr, top_module
 
             # Check if executable exists after successful return code
+            # executable_path is now correctly based on the extracted top_module
             if not os.path.exists(executable_path):
                 error_msg = f'Error: Verilator returned success but executable not found at {executable_path}.'
                 logger.error(error_msg)
-                return False, None, compile_stdout, compile_stderr + '\n' + error_msg
+                return False, None, compile_stdout, compile_stderr + '\n' + error_msg, top_module
 
             logger.info(f'Verilator compilation successful. Executable created at: {executable_path}')
-            return True, executable_path, compile_stdout, compile_stderr
+            return True, executable_path, compile_stdout, compile_stderr, top_module
 
         except subprocess.TimeoutExpired:
             error_msg = 'Error: Verilator compilation timed out.'
             logger.error(error_msg)
-            return False, None, compile_stdout, compile_stderr + '\n' + error_msg
+            return False, None, compile_stdout, compile_stderr + '\n' + error_msg, top_module
         except Exception as e:
             error_msg = f'An unexpected error occurred during Verilator compilation: {e}'
             logger.error(error_msg)
-            return False, None, compile_stdout, compile_stderr + '\n' + error_msg
+            return False, None, compile_stdout, compile_stderr + '\n' + error_msg, top_module
 
     def run_simulation(self, executable_path: str) -> Tuple[bool, str, str]:
         """

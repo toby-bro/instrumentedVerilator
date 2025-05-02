@@ -47,7 +47,7 @@ class VerilogSeedGeneratorAgent:
     def _read_file(self, file_path: str) -> str:
         """Reads the content of the specified file."""
         try:
-            with open(file_path, 'r') as f:
+            with open(file_path, 'r', encoding='utf-8') as f:
                 return f.read()
         except FileNotFoundError:
             logger.error(f'File not found at {file_path}')  # Use logger
@@ -72,7 +72,7 @@ class VerilogSeedGeneratorAgent:
         try:
             original_verilog_code = self._read_file(input_v_file_path)
             target_filename = os.path.basename(input_v_file_path)
-            top_module_guess = self.code_executor._get_top_module_name(input_v_file_path) or 'top'
+            top_module_guess = self.code_executor._guess_target_module_name_from_filename(input_v_file_path) or 'top'
 
         except (FileNotFoundError, IOError):
             return None  # Error already logged in _read_file
@@ -91,6 +91,7 @@ class VerilogSeedGeneratorAgent:
 
         generated_v_code = ''
         current_prompt = initial_prompt  # Start with the initial prompt
+        determined_top_module: Optional[str] = None  # Store the module name used by Verilator
 
         for attempt in range(self.max_retries + 1):
             logger.info(f'--- Attempt {attempt + 1} of {self.max_retries + 1} ---')
@@ -108,8 +109,14 @@ class VerilogSeedGeneratorAgent:
                 # 2. Write generated code to file
                 self.code_executor.write_code(output_v_file_path, generated_v_code)
 
-                # 3. Compile using Verilator
-                compile_success, executable_path, compile_stdout, compile_stderr = self.code_executor.compile_verilog(
+                # 3. Compile using Verilator - unpack the extra return value
+                (
+                    compile_success,
+                    executable_path,
+                    compile_stdout,
+                    compile_stderr,
+                    determined_top_module,  # Get the name used by Verilator
+                ) = self.code_executor.compile_verilog(
                     generated_v_path=output_v_file_path,
                     target_v_path=input_v_file_path,
                     sim_main_cpp_path=self.sim_main_cpp_path,
@@ -136,7 +143,6 @@ class VerilogSeedGeneratorAgent:
                 combined_stdout = compile_stdout + '\n--- Simulation Run ---\n' + run_stdout
                 combined_stderr = compile_stderr + '\n--- Simulation Run ---\n' + run_stderr
                 error_summary = f'Verilator Compilation/Simulation failed.\nStderr:\n{combined_stderr.strip()}'
-                # Optionally add stdout summary here if needed
 
                 logger.error(f'Error details:\n{error_summary}')
 
@@ -159,7 +165,6 @@ class VerilogSeedGeneratorAgent:
                 logger.error(f'An error occurred during attempt {attempt + 1}: {e}')  # Use logger
                 if attempt < self.max_retries:
                     logger.info('Retrying generation...')  # Use logger
-                    # Reset prompt to initial, as the state might be corrupted
                     current_prompt = initial_prompt  # Re-fetch initial prompt
                 else:
                     logger.error('Failed due to error after maximum retries.')  # Use logger
@@ -195,7 +200,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--max-retries',
         type=int,
-        default=3,
+        default=0,
         help='Maximum number of attempts to fix compilation/simulation errors (default: 3).',
     )
     args = parser.parse_args()

@@ -41,7 +41,7 @@ class LLMHandler:
                 model_instance = init_chat_model(provider='openai', model='gpt-3.5-turbo')
             elif model_type == 'mistral':
                 # Ensure MISTRAL_API_KEY is set in environment
-                model_instance = init_chat_model(provider='mistral', model='mistral-large-latest')
+                model_instance = init_chat_model(model='mistral-large-latest')
             elif model_type == 'gemini':
                 # Ensure GOOGLE_API_KEY is set in environment
                 model_instance = init_chat_model(provider='google_genai', model='gemini-pro')
