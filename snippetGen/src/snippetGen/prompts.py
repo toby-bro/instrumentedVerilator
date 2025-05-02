@@ -17,15 +17,16 @@ class PromptManager:
     def _load_prompts(self) -> None:
         """Loads the prompt templates."""
         # System Prompt
-        self._system_prompt_template = """You are an expert Verilog designer. Your task is to write a Verilog testbench module that instantiates and stimulates a given Verilog module ('{target_filename}', assumed top module name '{top_module_guess}').
+        self._system_prompt_template = """You are an expert Verilog designer. Your task is to write a Verilog testbench module that instantiates and stimulates a given Verilog module ('{target_filename}', assumed target module name '{top_module_guess}').
 The goal is to create a testbench that, when compiled and simulated with the target module using Verilator, runs without compilation errors and simulation runtime errors (e.g., assertion failures, crashes).
+The testbench module itself will be the top-level module for Verilator compilation (using --top-module).
 The testbench should include stimulus generation (e.g., driving inputs like clk, reset, and others) and potentially basic checks or `$display` statements. It should use `$finish;` to end the simulation gracefully.
 Provide only the complete Verilog code for the testbench module. Do not include explanations, comments about the code itself, or markdown formatting.
 Assume the testbench will be compiled with '{target_filename}' and driven by a standard C++ main file (like sim_main.cpp used with Verilator's --exe option)."""
 
         # Initial Prompt
         self._initial_prompt_template = """Write a complete Verilog testbench module (e.g., `module {top_module_guess}_tb; ... endmodule`) for the Verilog module defined in '{target_filename}'.
-The testbench should instantiate the module '{top_module_guess}' (e.g., `{top_module_guess} dut (...);`).
+The testbench should instantiate the target module '{top_module_guess}' (e.g., `{top_module_guess} dut (...);`).
 It must drive necessary inputs, especially `clk` and `reset` if they exist. Generate a clock signal and apply a reset sequence.
 Provide some basic stimulus to other inputs if present.
 Include `$finish;` at the end of the simulation sequence within an `initial` block.
@@ -37,8 +38,8 @@ Content of '{target_filename}':
 
 Generate only the Verilog code for the testbench module. Ensure it's a single, complete Verilog file."""
 
-        # Feedback Prompt
-        self._feedback_prompt_template = """The following Verilog testbench code was generated for '{target_filename}', but it failed during Verilator compilation or simulation.
+        # Feedback Prompt - Added {top_module_guess} for context
+        self._feedback_prompt_template = """The following Verilog testbench code was generated for the target module '{top_module_guess}' (from file '{target_filename}'), but it failed during Verilator compilation or simulation. The testbench module itself is treated as the top-level module by Verilator.
 
 Original Verilog module content ('{target_filename}'):
 ```verilog
@@ -57,6 +58,7 @@ Verilator Compilation/Simulation Error Output (Stderr focused):
 
 Please analyze the original Verilog module, the faulty generated testbench code, and the error message.
 Provide a corrected version of the generated Verilog testbench code that fixes the error and successfully compiles and simulates when linked with '{target_filename}'.
+Ensure the testbench module name is appropriate (e.g., `{top_module_guess}_tb`).
 Generate only the corrected Verilog testbench code."""
 
     def get_system_prompt(self, target_filename: str, top_module_guess: str) -> str:
@@ -81,6 +83,7 @@ Generate only the corrected Verilog testbench code."""
     def get_feedback_prompt(
         self,
         target_filename: str,
+        top_module_guess: str,  # Added parameter
         original_verilog_code: str,
         generated_v_code: str,
         error_summary: str,
@@ -90,6 +93,7 @@ Generate only the corrected Verilog testbench code."""
             raise ValueError('Feedback prompt template not loaded.')
         return self._feedback_prompt_template.format(
             target_filename=target_filename,
+            top_module_guess=top_module_guess,  # Pass to format
             original_verilog_code=original_verilog_code,
             generated_v_code=generated_v_code,
             error_summary=error_summary,

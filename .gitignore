@@ -20,3 +20,5 @@ coverage_reports.bak/verilator/*
 !coverage_reports.bak/verilator/comparison
 
 coverage*.json
+
+*.pyc
