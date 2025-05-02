@@ -3,98 +3,99 @@ from typing import Optional
 
 
 class PromptManager:
-    """Manages and formats prompts for Verilog testbench generation."""
+    """Manages prompts for generating Verilator-exercising SystemVerilog code based on target C++ file content."""
 
     def __init__(self) -> None:
         """Initializes the PromptManager."""
-        # In a more complex scenario, this could load from a JSON/YAML file.
-        # For now, templates are stored directly.
         self._system_prompt_template: Optional[str] = None
         self._initial_prompt_template: Optional[str] = None
         self._feedback_prompt_template: Optional[str] = None
-        self._load_prompts()  # Load prompts on initialization
+        self._load_prompts()
 
     def _load_prompts(self) -> None:
         """Loads the prompt templates."""
-        # System Prompt
-        self._system_prompt_template = """You are an expert Verilog designer. Your task is to write a Verilog testbench module that instantiates and stimulates a given Verilog module ('{target_filename}', assumed target module name '{top_module_guess}').
-The goal is to create a testbench that, when compiled and simulated with the target module using Verilator, runs without compilation errors and simulation runtime errors (e.g., assertion failures, crashes).
-The testbench module itself will be the top-level module for Verilator compilation (using --top-module).
-The testbench should include stimulus generation (e.g., driving inputs like clk, reset, and others) and potentially basic checks or `$display` statements. It should use `$finish;` to end the simulation gracefully.
-Provide only the complete Verilog code for the testbench module. Do not include explanations, comments about the code itself, or markdown formatting.
-Assume the testbench will be compiled with '{target_filename}' and driven by a standard C++ main file (like sim_main.cpp used with Verilator's --exe option)."""
+        # System Prompt - Updated to mention target C++ file
+        self._system_prompt_template = """You are an expert SystemVerilog designer. Your task is to generate a single, self-contained SystemVerilog file.
+The goal is to include SystemVerilog language constructs that are likely to maximize code coverage within a specific target C++ file ('{target_cpp_filename}') from the Verilator codebase when Verilator processes the generated SystemVerilog. You will be shown the content of this C++ file.
+Focus on generating diverse SystemVerilog declarations, assignments, operators, control flow, tasks, functions, and generate blocks that correspond to the logic and structures present in the target C++ code.
+The generated SystemVerilog code MUST be syntactically correct and pass `verilator --lint-only -Wall --no-timing`.
+Do NOT include:
+- Simulation stimulus (like `initial` blocks driving signals over time or containing delays).
+- Timing delays (`#`).
+- Simulation control tasks (`$finish`, `$stop`, etc.).
+- Display or monitoring tasks (`$display`, `$monitor`, `$write`, etc.).
+- Module instantiations.
+- Code intended for actual simulation execution logic.
+Provide only the complete SystemVerilog code within a single module definition. Do not include explanations or markdown formatting."""
 
-        # Initial Prompt
-        self._initial_prompt_template = """Write a complete Verilog testbench module (e.g., `module {top_module_guess}_tb; ... endmodule`) for the Verilog module defined in '{target_filename}'.
-The testbench should instantiate the target module '{top_module_guess}' (e.g., `{top_module_guess} dut (...);`).
-It must drive necessary inputs, especially `clk` and `reset` if they exist. Generate a clock signal and apply a reset sequence.
-Provide some basic stimulus to other inputs if present.
-Include `$finish;` at the end of the simulation sequence within an `initial` block.
+        # Initial Prompt - Updated to include target C++ content
+        self._initial_prompt_template = """Generate a single SystemVerilog file containing one module named 'top'. This module should include a diverse set of language constructs specifically chosen to exercise the code paths within the target C++ file '{target_cpp_filename}' (content provided below) when processed by Verilator.
+Analyze the C++ code to understand the Verilog constructs it handles (e.g., types of assignments, operators, control structures, data types). Generate SystemVerilog code that uses these specific constructs in various ways.
+Include various data types (logic, bit, int, arrays, structs, etc.), parameters, assignments (assign, blocking=, non-blocking<=), operators, conditional statements (if/else, case), loops (for, while, etc. in `always_comb`, `always_ff`), tasks, functions, and generate blocks, prioritizing those relevant to the C++ code.
+Ensure the SystemVerilog code is self-contained (no module instantiations) and syntactically correct.
+Avoid simulation-specific constructs (initial blocks for stimulus, delays, $finish, $display).
 
-Content of '{target_filename}':
-```verilog
-{original_verilog_code}
+
+Content of target C++ file '{target_cpp_filename}':
+```cpp
+{target_cpp_content}
 ```
 
-Generate only the Verilog code for the testbench module. Ensure it's a single, complete Verilog file."""
+Generate only the SystemVerilog code for this single module file."""
 
-        # Feedback Prompt - Added {top_module_guess} for context
-        self._feedback_prompt_template = """The following Verilog testbench code was generated for the target module '{top_module_guess}' (from file '{target_filename}'), but it failed during Verilator compilation or simulation. The testbench module itself is treated as the top-level module by Verilator.
+        # Feedback Prompt - Updated to include target C++ context
+        self._feedback_prompt_template = """The following SystemVerilog code was generated to exercise the Verilator C++ file '{target_cpp_filename}', but it failed linting (`verilator --lint-only -Wall --no-timing`).
 
-Original Verilog module content ('{target_filename}'):
-```verilog
-{original_verilog_code}
+Target C++ file content ('{target_cpp_filename}'):
+```cpp
+{target_cpp_content}
 ```
 
-Faulty generated Verilog testbench code:
-```verilog
+Faulty generated SystemVerilog code:
+```systemverilog
 {generated_v_code}
 ```
 
-Verilator Compilation/Simulation Error Output (Stderr focused):
-```verilog
+Verilator Lint Error Output (Stderr focused):
+```text
 {error_summary}
 ```
 
-Please analyze the original Verilog module, the faulty generated testbench code, and the error message.
-Provide a corrected version of the generated Verilog testbench code that fixes the error and successfully compiles and simulates when linked with '{target_filename}'.
-Ensure the testbench module name is appropriate (e.g., `{top_module_guess}_tb`).
-Generate only the corrected Verilog testbench code."""
+Please analyze the target C++ code, the faulty SystemVerilog code, and the lint errors. Provide a corrected version of the SystemVerilog code that fixes the lint error(s) while still aiming to include diverse language constructs relevant to the target C++ file to exercise Verilator.
+Ensure the code remains self-contained within a single module and avoids simulation-specific constructs or timing delays.
+Generate only the corrected SystemVerilog code."""
 
-    def get_system_prompt(self, target_filename: str, top_module_guess: str) -> str:
+    # Added target_cpp_filename parameter
+    def get_system_prompt(self, target_cpp_filename: str) -> str:
         """Formats and returns the system prompt."""
         if self._system_prompt_template is None:
             raise ValueError('System prompt template not loaded.')
-        return self._system_prompt_template.format(
-            target_filename=target_filename,
-            top_module_guess=top_module_guess,
-        )
+        return self._system_prompt_template.format(target_cpp_filename=target_cpp_filename)
 
-    def get_initial_prompt(self, target_filename: str, top_module_guess: str, original_verilog_code: str) -> str:
+    # Added target_cpp_filename and target_cpp_content parameters
+    def get_initial_prompt(self, target_cpp_filename: str, target_cpp_content: str) -> str:
         """Formats and returns the initial generation prompt."""
         if self._initial_prompt_template is None:
             raise ValueError('Initial prompt template not loaded.')
         return self._initial_prompt_template.format(
-            target_filename=target_filename,
-            top_module_guess=top_module_guess,
-            original_verilog_code=original_verilog_code,
+            target_cpp_filename=target_cpp_filename,
+            target_cpp_content=target_cpp_content,
         )
 
+    # Added target_cpp_filename and target_cpp_content parameters
     def get_feedback_prompt(
         self,
-        target_filename: str,
-        top_module_guess: str,  # Added parameter
-        original_verilog_code: str,
+        target_cpp_filename: str,
+        target_cpp_content: str,
         generated_v_code: str,
         error_summary: str,
     ) -> str:
-        """Formats and returns the feedback prompt for error correction."""
+        """Formats and returns the feedback prompt for lint error correction."""
         if self._feedback_prompt_template is None:
             raise ValueError('Feedback prompt template not loaded.')
         return self._feedback_prompt_template.format(
-            target_filename=target_filename,
-            top_module_guess=top_module_guess,  # Pass to format
-            original_verilog_code=original_verilog_code,
+            target_cpp_filename=target_cpp_filename,
+            target_cpp_content=target_cpp_content,
             generated_v_code=generated_v_code,
             error_summary=error_summary,
         )
