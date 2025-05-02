@@ -35,6 +35,8 @@ RUN apt-get update && apt-get -y install \
     zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
+RUN pip3 install git+https://github.com/RPGillespie6/fastcov.git --break-system-packages
+
 #Building proscess
 COPY verilator /verilator
 WORKDIR /verilator

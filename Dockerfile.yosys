@@ -26,6 +26,8 @@ RUN apt-get update && apt-get -y install \
     zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
+RUN pip3 install git+https://github.com/RPGillespie6/fastcov.git --break-system-packages
+
 # Clone Yosys repository
 COPY yosys /yosys
 
@@ -39,7 +41,7 @@ ENV CC=gcc
 ENV CXX=g++
 ENV CFLAGS="-fprofile-arcs -ftest-coverage"
 ENV CXXFLAGS="-fprofile-arcs -ftest-coverage"
-ENV LINKFLAGS="-lgcov --coverage" # yosys calls these flags such
+ENV LINKFLAGS="-lgcov --coverage" 
 
 # Build Yosys with coverage instrumentation
 RUN make config-gcc
