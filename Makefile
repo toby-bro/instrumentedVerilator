@@ -65,11 +65,11 @@ run: run-verilator
 
 .PHONY: run-verilator
 run:
-	docker run -it --rm -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippet_gen:/snippet_gen --workdir=/testFiles ghcr.io/toby-bro/instrumentedverilator:main /bin/bash
+	docker run -it --rm -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippetGen:/snippetGen --workdir=/testFiles ghcr.io/toby-bro/instrumentedverilator:main /bin/bash
 
 .PHONY: run-yosys
 run-yosys:
-	docker run -it --rm -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippet_gen:/snippet_gen --workdir=/testFiles ghcr.io/toby-bro/instrumentedyosys:main /bin/bash
+	docker run -it --rm -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippetGen:/snippetGen --workdir=/testFiles ghcr.io/toby-bro/instrumentedyosys:main /bin/bash
 
 .PHONY: getCoverage
 getCoverage:
