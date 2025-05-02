@@ -19,6 +19,7 @@ RUN apt-get update && apt-get -y install \
     libffi-dev \
     libreadline-dev \
     lld \
+    pip \
     pkg-config \
     python3 \
     tcl-dev \
