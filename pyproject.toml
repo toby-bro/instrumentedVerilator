@@ -7,17 +7,14 @@ requires-python = ">=3.13"
 dependencies = [
     "black>=24.10.0",
     "bs4>=0.0.2",
-    "langchain>=0.3.24",
-    "langchain-google-genai>=2.1.4",
-    "langchain-mistralai>=0.2.10",
-    "langchain-openai>=0.3.15",
+    "litellm>=1.67.5",
     "matplotlib>=3.10.1",
     "mypy>=1.14.1",
     "numpy>=2.2.1",
     "pyqt6>=6.9.0",
     "pytest>=8.3.4",
     "ruff>=0.9.2",
-    "snippetGen"
+    "snippetGen",
 ]
 
 [tool.hatch.build.targets.wheel]
