@@ -31,6 +31,7 @@ RUN pip3 install git+https://github.com/RPGillespie6/fastcov.git --break-system-
 
 # Clone Yosys repository
 RUN git clone --depth 1 https://github.com/YosysHQ/yosys.git /yosys
+WORKDIR /yosys
 RUN git submodule init
 RUN git submodule update --init --recursive
 
