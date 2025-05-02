@@ -48,8 +48,6 @@ help:
 	@echo "  make syncCoverage      - Continuously generate coverage until all tests are processed (Verilator)"
 	@echo "  make syncYosysCoverage - Continuously generate coverage until all tests are processed (Yosys)"
 	@echo "  make plotCoverage      - Run script to plot coverage data"
-	@echo "  make getCoverageCmd    - Print the gcovr command for coverage report generation (Verilator)"
-	@echo "  make getYosysCoverageCmd - Print the gcovr command for Yosys coverage"
 	@echo ""
 	@echo "Cleanup targets:"
 	@echo "  make cleanTransfuzzTestFiles  - Clean obj_dirs from transfuzzTestFiles"
@@ -63,20 +61,23 @@ help:
 	@echo "Current test directory: $(TEST_FILES_DIR) (set with TEST_FILES_DIR=dirname)"
 
 .PHONY: run
+run: run-verilator
+
+.PHONY: run-verilator
 run:
-	docker run -it --rm -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippet_gen:/snippet_gen --workdir=/testFiles instrumentedverilator /bin/bash
+	docker run -it --rm -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippet_gen:/snippet_gen --workdir=/testFiles ghcr.io/toby-bro/instrumentedverilator:main /bin/bash
 
 .PHONY: run-yosys
 run-yosys:
-	docker run -it --rm -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippet_gen:/snippet_gen --workdir=/testFiles instrumentedyosys /bin/bash
+	docker run -it --rm -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippet_gen:/snippet_gen --workdir=/testFiles ghcr.io/toby-bro/instrumentedyosys:main /bin/bash
 
 .PHONY: getCoverage
 getCoverage:
-	docker exec -it $(shell docker ps -q --filter ancestor=instrumentedverilator) /bin/bash -c "gcovr --html --html-details -f '.*\.cpp$$' -e '(.*/)?(V3Coverage\.cpp|V3CoverageJoin\.cpp|V3EmitCMake\.cpp|V3EmitXml\.cpp|V3ExecGraph\.cpp|V3GraphTest\.cpp|V3HierBlock\.cpp|V3Trace\.cpp|V3TraceDecl\.cpp|V3EmitV\.cpp|V3TSP\.cpp|V3Scoreboard\.cpp|V3Stats\.cpp|V3ProtectLib\.cpp|V3Broken\.cpp|V3Interface\.cpp)$$' -o /testFiles/coverage_reports/coverage_report.html --root /verilator/src"
+	docker exec -it $(shell docker ps -q --filter ancestor=instrumentedverilator) /bin/bash -c "fastcov -o report.info -d /verilator/src --lcov --exclude-glob '*.[hly]' --include .cpp --exclude /usr/include V3Coverage.cpp V3CoverageJoin.cpp V3EmitCMake.cpp V3EmitXml.cpp V3ExecGraph.cpp V3GraphTest.cpp V3HierBlock.cpp V3Trace.cpp V3TraceDecl.cpp V3EmitV.cpp V3TSP.cpp V3Scoreboard.cpp V3Stats.cpp V3ProtectLib.cpp V3Broken.cpp V3Interface.cpp && genhtml -o /testFiles/coverage_reports "
 
 .PHONY: getYosysCoverage
 getYosysCoverage:
-	docker exec -it $(shell docker ps -q --filter ancestor=instrumentedyosys) /bin/bash -c "gcovr --html --html-details -f '.*\.(cc|cpp)$$' -o /testFiles/yosys_coverage_reports/coverage_report.html --root /yosys"
+	docker exec -it $(shell docker ps -q --filter ancestor=instrumentedyosys) /bin/bash -c "fastcov -o report.info -d /yosys/kernel --lcov --exclude-glob '*.[hly]' --include .cc .cpp --exclude /usr/include -o report.info && genhtml -o /testFiles/yosys_coverage_reports report.info"
 
 .PHONY: backupCoverage
 backupCoverage:
@@ -100,17 +101,6 @@ cleanTransfuzzTestFiles:
 cleanVerismith:
 	rm -rf testFiles/verismith/obj_dir_example_sim_*/obj_dir
 
-.PHONY: getCoverageCmd
-getCoverageCmd:
-	@echo "gcovr --html --html-details -f '.*\.cpp$$' -e '(.*/)?(V3Coverage\.cpp|V3CoverageJoin\.cpp|V3EmitCMake\.cpp|V3EmitXml\.cpp|V3ExecGraph\.cpp|V3GraphTest\.cpp|V3HierBlock\.cpp|V3Trace\.cpp|V3TraceDecl\.cpp)$' -o /testFiles/coverage_reports/coverage_report.html --root /verilator/src"
-
-.PHONY: getYosysCoverageCmd
-getYosysCoverageCmd:
-	@echo "gcovr --html --html-details -f '.*\.(cc|cpp)$$' -o /testFiles/yosys_coverage_reports/coverage_report.html --root /yosys"
-
-.PHONY: getFastCovCmd
-getFastCovCmd:
-	@echo "to be improved fastcov -o /testFiles/coverage_reports/coverage_report.json --include '.*\\.cpp$$' --exclude '(.*/)?(V3Coverage\\.cpp|V3CoverageJoin\\.cpp|V3EmitCMake\\.cpp|V3EmitXml\\.cpp|V3ExecGraph\\.cpp|V3GraphTest\\.cpp|V3HierBlock\\.cpp|V3Trace\\.cpp|V3TraceDecl\\.cpp)$$' --lcov --directory /verilator/src"
 
 .PHONY: clearCoverage
 clearCoverage:
