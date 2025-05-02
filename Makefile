@@ -64,11 +64,11 @@ help:
 
 .PHONY: run
 run:
-	docker run -it --rm -v $(PWD)/testFiles:/testFiles --workdir=/testFiles instrumentedverilator /bin/bash
+	docker run -it --rm -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippet_gen:/snippet_gen --workdir=/testFiles instrumentedverilator /bin/bash
 
 .PHONY: run-yosys
 run-yosys:
-	docker run -it --rm -v $(PWD)/testFiles:/testFiles --workdir=/testFiles instrumentedyosys /bin/bash
+	docker run -it --rm -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippet_gen:/snippet_gen --workdir=/testFiles instrumentedyosys /bin/bash
 
 .PHONY: getCoverage
 getCoverage:
