@@ -112,8 +112,7 @@ class CodeExecutor:
             '-Wno-UNSIGNED',
             '-Wno-WIDTHEXPAND',
             '-Wno-WIDTHTRUNC',
-            '--top-module',  # Specify the top module for linting
-            'top',  # Assume the top module is named 'top' as per prompt requirements
+            '-Wno-MULTITOP',
             generated_v_path,  # Only lint the generated file
         ]
 

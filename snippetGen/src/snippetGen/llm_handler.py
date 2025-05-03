@@ -16,7 +16,7 @@ if 'MISTRAL_API_KEY' not in os.environ:
 class LLMHandler:
     """Handles interaction with different language models using LiteLLM."""
 
-    def __init__(self, model_type: Literal['openai', 'mistral', 'gemini']) -> None:
+    def __init__(self, model_type: Literal['openai', 'mistral', 'gemini', 'gemini-pro']) -> None:
         """
         Initializes the LLMHandler with the specified model type.
 
@@ -26,10 +26,16 @@ class LLMHandler:
         """
         if model_type == 'openai':
             self.model_name = 'gpt-3.5-turbo'
+            self.provider = 'openai'
         elif model_type == 'mistral':
             self.model_name = 'mistral/codestral-latest'
+            self.provider = 'mistral'
+        elif model_type == 'gemini-pro':
+            self.model_name = 'gemini-2.5-pro-exp-03-25'
+            self.provider = 'gemini'
         elif model_type == 'gemini':
-            self.model_name = 'gemini/gemini-pro'
+            self.model_name = 'gemini/gemini-2.5-flash-preview-04-17'
+            self.provider = 'gemini'
         else:
             raise ValueError(f'Unsupported model type: {model_type}')
 
@@ -56,7 +62,7 @@ class LLMHandler:
 
         try:
             logger.info(f'Invoking LLM ({self.model_name}) via LiteLLM...')
-            response = litellm.completion(model=self.model_name, messages=messages)
+            response = litellm.completion(model=self.model_name, messages=messages, provider=self.provider)
             logger.info('LLM invocation complete.')
 
             content: Optional[Union[str, Dict]] = None
