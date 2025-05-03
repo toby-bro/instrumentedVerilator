@@ -22,3 +22,4 @@ coverage_reports.bak/verilator/*
 coverage*.json
 
 *.pyc
+*.zip

@@ -1,6 +1,6 @@
 import argparse
 import logging
-import os  # Import os module
+import os
 from typing import Literal, Optional
 
 from snippetGen.code_executor import CodeExecutor
@@ -166,7 +166,25 @@ if __name__ == '__main__':
         default=3,
         help='Maximum number of attempts to fix linting errors (default: 3).',
     )
+    # Add the verbose argument
+    parser.add_argument(
+        '-v',
+        '--verbose',
+        action='store_true',  # Sets args.verbose to True if flag is present
+        help='Enable verbose output (DEBUG level logging).',
+    )
     args = parser.parse_args()
+
+    # Reconfigure logging level based on the verbose flag
+    log_level = logging.DEBUG if args.verbose else logging.INFO
+    # Get the root logger and set its level
+    # Also update the handler level if using basicConfig's default handler
+    logging.getLogger().setLevel(log_level)
+    for handler in logging.getLogger().handlers:
+        handler.setLevel(log_level)
+
+    # Now logger.debug messages will be shown if -v is used
+    logger.debug(f'Arguments received: {args}')
 
     if not args.output.endswith(('.v', '.sv')):
         logger.warning('Output file does not end with .v or .sv. It will be treated as a SystemVerilog source file.')
@@ -199,5 +217,7 @@ if __name__ == '__main__':
         logger.critical(f'Process failed critically: {e}')
         exit(1)
     except Exception as e:
+        # Log traceback at debug level for critical errors too
+        logger.debug('Critical Traceback:', exc_info=True)
         logger.critical(f'An unexpected critical error occurred: {e}')
         exit(1)
