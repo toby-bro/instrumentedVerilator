@@ -108,6 +108,10 @@ clearCoverage:
 	find . -name "*.gcno" -type f -exec rm -f {} +
 	find . -name "*.dat" -type f -exec rm -f {} +
 
+.PHONY: getABCCoverage
+getABCCoverage:
+	@echo "0" > testFiles/coverage_reports/abccov.dat
+
 .PHONY: syncCoverage
 syncCoverage: clearCoverage
 	@while [ $$(find testFiles/$(TEST_FILES_DIR)/ -name 'obj_dir' -type d | wc -l) -lt $$(find testFiles/$(TEST_FILES_DIR) -type f -name 'top.sv' | wc -l) ]; do \
