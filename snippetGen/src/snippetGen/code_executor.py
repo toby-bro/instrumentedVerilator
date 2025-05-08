@@ -9,6 +9,13 @@ logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
+def unbloat_code(code: str) -> str:
+    code = re.sub(pattern=r'\/\/\s*INJECT', repl='//INJECT', string=code)
+    code = re.sub(pattern=r'\/\/\s.*$', repl='\n', string=code, flags=re.MULTILINE)
+    code = re.sub(pattern=r'^\s*$\s', repl='', string=code, flags=re.MULTILINE)
+    return code  # noqa: RET504
+
+
 class CodeExecutor:
     """Handles writing and linting Verilog code using Verilator."""
 
@@ -23,6 +30,7 @@ class CodeExecutor:
         Raises:
             IOError: If writing to the file fails.
         """
+        code = unbloat_code(code)
         try:
             # Ensure directory exists, handle case where file_path is just a filename
             dir_name = os.path.dirname(file_path)
@@ -60,7 +68,7 @@ class CodeExecutor:
         try:
             with open(verilog_file_path, 'r', encoding='utf-8') as f:
                 content = f.read(2048)
-            match = re.search(r'^\s*module\s+([a-zA-Z_]\w*)\s*(?:#\(.*?\))?\s*(?:\(.*\))?\s*;', content, re.MULTILINE)
+            match = re.search(r'^\s*module\s+([a-zA-Z_]\w*)\s*', content, re.MULTILINE)
             if match:
                 module_name = match.group(1)
                 logger.info(f"Extracted module name '{module_name}' from {verilog_file_path}")
@@ -113,6 +121,9 @@ class CodeExecutor:
             '-Wno-WIDTHEXPAND',
             '-Wno-WIDTHTRUNC',
             '-Wno-MULTITOP',
+            '-Wno-ALWCOMBORDER',
+            '-sv',
+            '--assert',
             generated_v_path,  # Only lint the generated file
         ]
 
