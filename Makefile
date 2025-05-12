@@ -65,19 +65,19 @@ run: run-verilator
 
 .PHONY: run-verilator
 run:
-	docker run -it --rm -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippet_gen:/snippet_gen --workdir=/testFiles ghcr.io/toby-bro/instrumentedverilator:main /bin/bash
+	docker run -it --rm -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippetGen:/snippetGen --workdir=/testFiles ghcr.io/toby-bro/instrumentedverilator:main /bin/bash
 
 .PHONY: run-yosys
 run-yosys:
-	docker run -it --rm -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippet_gen:/snippet_gen --workdir=/testFiles ghcr.io/toby-bro/instrumentedyosys:main /bin/bash
+	docker run -it --rm -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippetGen:/snippetGen --workdir=/testFiles ghcr.io/toby-bro/instrumentedyosys:main /bin/bash
 
 .PHONY: getCoverage
 getCoverage:
-	docker exec -it $(shell docker ps -q --filter ancestor=instrumentedverilator) /bin/bash -c "fastcov -o report.info -d /verilator/src --lcov --exclude-glob '*.[hly]' --include .cpp --exclude /usr/include V3Coverage.cpp V3CoverageJoin.cpp V3EmitCMake.cpp V3EmitXml.cpp V3ExecGraph.cpp V3GraphTest.cpp V3HierBlock.cpp V3Trace.cpp V3TraceDecl.cpp V3EmitV.cpp V3TSP.cpp V3Scoreboard.cpp V3Stats.cpp V3ProtectLib.cpp V3Broken.cpp V3Interface.cpp && genhtml -o /testFiles/coverage_reports "
+	docker exec -it $(shell docker ps -q --filter ancestor=instrumentedverilator) /bin/bash -c "fastcov -o report.info -b -d /verilator/src --lcov --exclude-glob '*.[hly]' --include .cpp --exclude /usr/include V3Coverage.cpp V3CoverageJoin.cpp V3EmitCMake.cpp V3EmitXml.cpp V3ExecGraph.cpp V3GraphTest.cpp V3HierBlock.cpp V3Trace.cpp V3TraceDecl.cpp V3EmitV.cpp V3TSP.cpp V3Scoreboard.cpp V3Stats.cpp V3ProtectLib.cpp V3Broken.cpp V3Interface.cpp && genhtml -o /testFiles/coverage_reports report.info"
 
 .PHONY: getYosysCoverage
 getYosysCoverage:
-	docker exec -it $(shell docker ps -q --filter ancestor=instrumentedyosys) /bin/bash -c "fastcov -o report.info -d /yosys/kernel --lcov --exclude-glob '*.[hly]' --include .cc .cpp --exclude /usr/include -o report.info && genhtml -o /testFiles/yosys_coverage_reports report.info"
+	docker exec -it $(shell docker ps -q --filter ancestor=instrumentedyosys) /bin/bash -c "fastcov -o report.info -b -d /yosys/kernel --lcov --exclude-glob '*.[hly]' --include .cc .cpp --exclude /usr/include -o report.info && genhtml -o /testFiles/yosys_coverage_reports report.info"
 
 .PHONY: backupCoverage
 backupCoverage:
@@ -107,6 +107,10 @@ clearCoverage:
 	find . -name "*.gcda" -type f -exec rm -f {} +
 	find . -name "*.gcno" -type f -exec rm -f {} +
 	find . -name "*.dat" -type f -exec rm -f {} +
+
+.PHONY: getABCCoverage
+getABCCoverage:
+	@echo "0" > testFiles/coverage_reports/abccov.dat
 
 .PHONY: syncCoverage
 syncCoverage: clearCoverage
