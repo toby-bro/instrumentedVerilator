@@ -97,6 +97,12 @@ class VerilogSeedGeneratorAgent:
                 )
 
                 if lint_success:
+                    logger.info('Verilator linting passed.')
+                    lint_success, lint_stdout, lint_stderr = self.code_executor.simulate_verilog(
+                        generated_v_path=output_v_file_path,
+                    )
+
+                if lint_success:
                     logger.info(
                         f'Successfully generated and linted SystemVerilog code: {output_v_file_path}',
                     )

@@ -1,6 +1,4 @@
-import getpass
 import logging
-import os
 from typing import Dict, List, Literal, Optional, Union
 
 import litellm
@@ -8,9 +6,6 @@ import litellm
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
-if 'MISTRAL_API_KEY' not in os.environ:
-    os.environ['MISTRAL_API_KEY'] = getpass.getpass(prompt='Enter your Mistral API key: ')
 
 
 class LLMHandler:
