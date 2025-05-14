@@ -23,3 +23,5 @@ coverage*.json
 
 *.pyc
 *.zip
+
+dist/
