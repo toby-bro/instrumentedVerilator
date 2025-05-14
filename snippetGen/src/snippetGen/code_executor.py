@@ -108,7 +108,7 @@ class CodeExecutor:
         lint_command = [
             verilator_exe,
             '--lint-only',
-            '--no-timing',  # Keep this flag as prompts forbid #delays
+            '--timing',
             '-Wall',
             '-Wno-CMPCONST',
             '-Wno-DECLFILENAME',
