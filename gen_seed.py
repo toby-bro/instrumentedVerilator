@@ -31,7 +31,13 @@ def parse_arguments() -> argparse.Namespace:
         '--threshold',
         type=float,
         default=40.0,
-        help='Coverage threshold percentage (0-100). Files below this will be targeted (default: 40.0).',
+        help='Upper coverage threshold percentage (0-100). Files below this will be targeted (default: 40.0).',
+    )
+    parser.add_argument(
+        '--min-threshold',
+        type=float,
+        default=0.0,
+        help='Lower coverage threshold percentage (0-100). Files at or above this threshold (and below --threshold) will be targeted. Default: 0.0',
     )
     parser.add_argument(
         '--model',
@@ -141,6 +147,12 @@ def main() -> None:
     if not (0.0 <= args.threshold <= 100.0):
         logger.error('Threshold must be between 0.0 and 100.0.')
         sys.exit(1)
+    if not (0.0 <= args.min_threshold <= 100.0):
+        logger.error('Min-threshold must be between 0.0 and 100.0.')
+        sys.exit(1)
+    if args.min_threshold >= args.threshold:
+        logger.error('Min-threshold must be less than threshold.')
+        sys.exit(1)
 
     if not os.path.exists(args.fastcov_json):
         logger.error(f'Fastcov JSON file not found: {args.fastcov_json}')
@@ -161,19 +173,40 @@ def main() -> None:
         sys.exit(1)
 
     # Find low coverage files
-    logger.info(f'Analyzing coverage from {args.fastcov_json} with threshold {args.threshold}%...')
-    low_coverage_files = find_low_coverage_from_json(args.fastcov_json, args.threshold)
+    if args.min_threshold > 0.0:
+        logger.info(
+            f'Analyzing coverage from {args.fastcov_json} for files with coverage between {args.min_threshold}% and {args.threshold}%...',
+        )
+    else:
+        logger.info(f'Analyzing coverage from {args.fastcov_json} with threshold {args.threshold}%...')
+
+    low_coverage_files = find_low_coverage_from_json(
+        args.fastcov_json,
+        args.threshold,
+        args.min_threshold,
+    )
 
     if not low_coverage_files:
-        logger.info(
-            f'No C++ files found with coverage below {args.threshold:.2f}% in {args.fastcov_json}.',
-        )
+        if args.min_threshold > 0.0:
+            logger.info(
+                f'No C++ files found with coverage between {args.min_threshold:.2f}% and {args.threshold:.2f}% in {args.fastcov_json}.',
+            )
+        else:
+            logger.info(
+                f'No C++ files found with coverage below {args.threshold:.2f}% in {args.fastcov_json}.',
+            )
         sys.exit(0)
 
-    logger.info(
-        f'Found {len(low_coverage_files)} C++ files below {args.threshold:.2f}% coverage. '
-        f'Attempting to generate Verilog snippets...',
-    )
+    if args.min_threshold > 0.0:
+        logger.info(
+            f'Found {len(low_coverage_files)} C++ files with coverage between {args.min_threshold:.2f}% and {args.threshold:.2f}%. '
+            f'Attempting to generate Verilog snippets...',
+        )
+    else:
+        logger.info(
+            f'Found {len(low_coverage_files)} C++ files below {args.threshold:.2f}% coverage. '
+            f'Attempting to generate Verilog snippets...',
+        )
 
     successful_generations, failed_generations = generate_verilog_snippets(args, agent, low_coverage_files)
 

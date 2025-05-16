@@ -7,16 +7,25 @@ logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
-def find_low_coverage_from_json(json_file_path: str, threshold: float) -> List[Tuple[str, float]]:
+def find_low_coverage_from_json(
+    json_file_path: str,
+    threshold: float,
+    min_threshold: float = 0.0,
+) -> List[Tuple[str, float]]:
     """
-    Parses a fastcov coverage.json file to find files below a coverage threshold.
+    Parses a fastcov coverage.json file to find files within a coverage range.
 
     Args:
         json_file_path: Path to the fastcov coverage.json file.
-        threshold: The coverage percentage threshold (0-100). Files below this are reported.
+        threshold: The upper coverage percentage threshold (0-100).
+                   Files with coverage < threshold are considered.
+        min_threshold: The lower coverage percentage threshold (0-100).
+                       Files with coverage >= min_threshold are considered.
+                       Default is 0.0.
 
     Returns:
-        A list of tuples (source_file_name, coverage_percentage), sorted by percentage.
+        A list of tuples (source_file_name, coverage_percentage),
+        sorted by percentage, for files where min_threshold <= coverage < threshold.
     """
     coverage_results: List[Tuple[str, float]] = []
 
@@ -56,7 +65,7 @@ def find_low_coverage_from_json(json_file_path: str, threshold: float) -> List[T
     logger.debug(f'Extracted coverage for {len(coverage_results)} files.')
 
     # Filter for low coverage
-    low_coverage_files = [res for res in coverage_results if res[1] < threshold]
+    low_coverage_files = [res for res in coverage_results if min_threshold <= res[1] < threshold]
 
     # Sort by coverage percentage (ascending)
     low_coverage_files.sort(key=lambda item: item[1])
@@ -77,7 +86,13 @@ if __name__ == '__main__':
         '--threshold',
         type=float,
         default=80.0,
-        help='Coverage threshold percentage (0-100). Files below this threshold will be reported. Default: 80.0',
+        help='Upper coverage threshold percentage (0-100). Files below this threshold will be reported. Default: 80.0',
+    )
+    parser.add_argument(
+        '--min-threshold',
+        type=float,
+        default=0.0,
+        help='Lower coverage threshold percentage (0-100). Files at or above this threshold will be considered. Default: 0.0',
     )
 
     args = parser.parse_args()
@@ -85,13 +100,31 @@ if __name__ == '__main__':
     if not 0.0 <= args.threshold <= 100.0:
         logger.error('Threshold must be between 0.0 and 100.0')
         exit(1)
+    if not 0.0 <= args.min_threshold <= 100.0:
+        logger.error('Min-threshold must be between 0.0 and 100.0')
+        exit(1)
+    if args.min_threshold >= args.threshold:
+        logger.error('Min-threshold must be less than threshold.')
+        exit(1)
 
-    low_coverage = find_low_coverage_from_json(args.fastcov_json, args.threshold)
+    low_coverage = find_low_coverage_from_json(args.fastcov_json, args.threshold, args.min_threshold)
 
     if low_coverage:
-        logger.info(f'\n--- Files with Line Coverage Below {args.threshold:.2f}% (from {args.fastcov_json}) ---')
+        if args.min_threshold > 0.0:
+            logger.info(
+                f'\n--- Files with Line Coverage Between {args.min_threshold:.2f}% and {args.threshold:.2f}% (from {args.fastcov_json}) ---',
+            )
+        else:
+            logger.info(
+                f'\n--- Files with Line Coverage Below {args.threshold:.2f}% (from {args.fastcov_json}) ---',
+            )
         for source_file, coverage in low_coverage:
             logger.info(f'{coverage:.2f}% : {source_file}')
         logger.info('--------------------------------------------------------------------')
     else:
-        logger.info(f'\nNo files found with line coverage below {args.threshold:.2f}% in {args.fastcov_json}.')
+        if args.min_threshold > 0.0:
+            logger.info(
+                f'\nNo files found with line coverage between {args.min_threshold:.2f}% and {args.threshold:.2f}% in {args.fastcov_json}.',
+            )
+        else:
+            logger.info(f'\nNo files found with line coverage below {args.threshold:.2f}% in {args.fastcov_json}.')
