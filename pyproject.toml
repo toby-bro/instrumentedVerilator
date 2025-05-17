@@ -18,10 +18,10 @@ dependencies = [
 ]
 
 [tool.hatch.build.targets.wheel]
-    packages = ["snippetGen"]
+packages = ["snippetGen"]
 
 [tool.uv.sources]
-    snippetGen = { workspace = true }
+snippetGen = { workspace = true }
 
 [tool.ruff]
 exclude = [
