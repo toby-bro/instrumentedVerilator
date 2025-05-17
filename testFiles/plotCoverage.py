@@ -87,23 +87,27 @@ def plot_coverage_values(file_paths: list[str], *, is_synced: bool = False) -> N
     plt.xkcd()
 
     _, ax = plt.subplots()
-    ax.plot(range(len(file_indices)), lines_coverage, label='Lines', marker='o')
-    ax.plot(range(len(file_indices)), functions_coverage, label='Functions', marker='s')
-    ax.plot(range(len(file_indices)), branches_coverage, label='Branches', marker='^')
+
+    ax.axhline(y=37.3, color='red', linestyle='--', label='Transfuzz Line Coverage')
+    ax.axhline(y=39.3, color='red', linestyle=':', label='Verismith Line Coverage')
+
+    ax.plot(range(len(file_indices)), lines_coverage, label='Line coverage', marker='o')
+    ax.plot(range(len(file_indices)), functions_coverage, label='Function coverage', marker='s')
+    ax.plot(range(len(file_indices)), branches_coverage, label='Branch coverage', marker='^')
 
     # Set diagonal labels for x-axis
-    ax.set_xticks(range(len(file_indices)))
-    ax.set_xticklabels(file_indices, rotation=65, ha='right')
+    # ax.set_xticks(range(len(file_indices)))
+    # ax.set_xticklabels(file_indices, rotation=65, ha='right')
 
     ax.set_ylabel('Coverage (%)')
     if is_synced:
         ax.set_title('Coverage vs. Number of Files')
         ax.set_xlabel('Number of Files')
     else:
-        ax.set_title('Coverage')
-        ax.set_xlabel('Test files used')
+        ax.set_title('Coverage progression vs. Generated snippets')
+        ax.set_xlabel('Test files generated')
 
-    ax.legend()
+    ax.legend(loc='upper left', bbox_to_anchor=(0, 1), fontsize='small')
 
     # Add tight_layout to ensure the rotated labels fit
     plt.tight_layout()
@@ -133,11 +137,11 @@ def find_coverage_reports(
 
 
 if __name__ == '__main__':
-    directory = './coverage_reports.bak/'
+    directory = './coverage_reports.bak/verilator'
     is_verismith = False
     is_transfuzz = False
-    is_comparison = True
-    is_perso = False
+    is_comparison = False
+    is_perso = True
     assert 1 == sum(
         1 if i is True else 0 for i in [is_verismith, is_transfuzz, is_comparison, is_perso]
     ), 'Only one of is_verismith, is_transfuzz, or is_comparison can be True.'
