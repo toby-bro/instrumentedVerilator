@@ -143,3 +143,7 @@ getExecOneFileCmd:
 .PHONY: getExecYosysFileCmd
 getExecYosysFileCmd:
 	@echo 'yosys -p "read_verilog file.sv; synth -top top; write_verilog /testFiles/synth_out/synth.v"'
+
+.PHONY: checkGeneratedStatus
+checkGeneratedStatus:
+	for i in snippets/*.sv ; do ss=$$(pfuzz -strategy smart -check-file -vv -file $$i 2>/dev/null) ; if [ $$? -eq 0 ]; then echo "[+] success" $$i ; else echo "[-] failure" $$i; fi ; done
