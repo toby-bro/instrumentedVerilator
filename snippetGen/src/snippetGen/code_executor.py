@@ -122,6 +122,8 @@ class CodeExecutor:
             '-Wno-WIDTHTRUNC',
             '-Wno-MULTITOP',
             '-Wno-ALWCOMBORDER',
+            '-Wno-CASEINCOMPLETE',
+            '-Wno-CASEOVERLAP',
             '-sv',
             '--assert',
             generated_v_path,  # Only lint the generated file
