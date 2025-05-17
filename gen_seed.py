@@ -37,7 +37,7 @@ def parse_arguments() -> argparse.Namespace:
         '--min-threshold',
         type=float,
         default=0.0,
-        help='Lower coverage threshold percentage (0-100). Files at or above this threshold (and below --threshold) will be targeted. Default: 0.0',
+        help='Lower coverage threshold percentage (0-100). Files at or above this threshold (and below --threshold) will be targeted. Default: 0.0',  # noqa: E501
     )
     parser.add_argument(
         '--model',
@@ -125,6 +125,31 @@ def generate_verilog_snippets(
     return successful_generations, failed_generations
 
 
+def validate_args(args: argparse.Namespace) -> bool:
+    # Validate arguments
+    if not (0.0 <= args.threshold <= 100.0):
+        logger.error('Threshold must be between 0.0 and 100.0.')
+        return False
+    if not (0.0 <= args.min_threshold <= 100.0):
+        logger.error('Min-threshold must be between 0.0 and 100.0.')
+        return False
+    if args.min_threshold >= args.threshold:
+        logger.error('Min-threshold must be less than threshold.')
+        return False
+
+    if not os.path.exists(args.fastcov_json):
+        logger.error(f'Fastcov JSON file not found: {args.fastcov_json}')
+        return False
+
+    try:
+        os.makedirs(args.output_dir, exist_ok=True)
+        logger.info(f'Ensured output directory exists: {args.output_dir}')
+    except OSError as e:
+        logger.error(f'Could not create output directory {args.output_dir}: {e}')
+        return False
+    return True
+
+
 def main() -> None:
     args = parse_arguments()
 
@@ -144,25 +169,8 @@ def main() -> None:
     logger.debug(f'Arguments received: {args}')
 
     # Validate arguments
-    if not (0.0 <= args.threshold <= 100.0):
-        logger.error('Threshold must be between 0.0 and 100.0.')
-        sys.exit(1)
-    if not (0.0 <= args.min_threshold <= 100.0):
-        logger.error('Min-threshold must be between 0.0 and 100.0.')
-        sys.exit(1)
-    if args.min_threshold >= args.threshold:
-        logger.error('Min-threshold must be less than threshold.')
-        sys.exit(1)
-
-    if not os.path.exists(args.fastcov_json):
-        logger.error(f'Fastcov JSON file not found: {args.fastcov_json}')
-        sys.exit(1)
-
-    try:
-        os.makedirs(args.output_dir, exist_ok=True)
-        logger.info(f'Ensured output directory exists: {args.output_dir}')
-    except OSError as e:
-        logger.error(f'Could not create output directory {args.output_dir}: {e}')
+    if not validate_args(args):
+        logger.critical('Invalid arguments provided. Exiting.')
         sys.exit(1)
 
     # Initialize VerilogSeedGeneratorAgent
@@ -175,7 +183,7 @@ def main() -> None:
     # Find low coverage files
     if args.min_threshold > 0.0:
         logger.info(
-            f'Analyzing coverage from {args.fastcov_json} for files with coverage between {args.min_threshold}% and {args.threshold}%...',
+            f'Analyzing coverage from {args.fastcov_json} for files with coverage between {args.min_threshold}% and {args.threshold}%...',  # noqa: E501
         )
     else:
         logger.info(f'Analyzing coverage from {args.fastcov_json} with threshold {args.threshold}%...')
@@ -189,7 +197,7 @@ def main() -> None:
     if not low_coverage_files:
         if args.min_threshold > 0.0:
             logger.info(
-                f'No C++ files found with coverage between {args.min_threshold:.2f}% and {args.threshold:.2f}% in {args.fastcov_json}.',
+                f'No C++ files found with coverage between {args.min_threshold:.2f}% and {args.threshold:.2f}% in {args.fastcov_json}.',  # noqa: E501
             )
         else:
             logger.info(
@@ -199,7 +207,7 @@ def main() -> None:
 
     if args.min_threshold > 0.0:
         logger.info(
-            f'Found {len(low_coverage_files)} C++ files with coverage between {args.min_threshold:.2f}% and {args.threshold:.2f}%. '
+            f'Found {len(low_coverage_files)} C++ files with coverage between {args.min_threshold:.2f}% and {args.threshold:.2f}%. '  # noqa: E501
             f'Attempting to generate Verilog snippets...',
         )
     else:
