@@ -25,3 +25,4 @@ coverage*.json
 *.zip
 
 dist/
+mismatches/
