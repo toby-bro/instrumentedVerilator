@@ -84,6 +84,7 @@ def generate_verilog_snippets(
         # This assumes gen_seed.py is run from the root of the Verilator project,
         # or that these paths are relative from CWD after stripping leading '/'.
         target_cpp_file_path = cpp_file_path_in_report.lstrip('/')
+        target_cpp_file_path = os.path.join('../', target_cpp_file_path)
 
         logger.info(
             f'\n--- Processing C++ file: {target_cpp_file_path} (Coverage: {coverage_percent:.2f}%) ---',
