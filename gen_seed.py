@@ -66,6 +66,10 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def file_exists(file_path: str) -> bool:
+    return os.path.exists(file_path)
+
+
 def generate_verilog_snippets(
     args: argparse.Namespace,
     agent: VerilogSeedGeneratorAgent,
@@ -95,6 +99,12 @@ def generate_verilog_snippets(
         base_cpp_filename = os.path.basename(target_cpp_file_path)
         output_sv_filename = base_cpp_filename.replace('.cpp', '.sv')
         output_sv_filepath = os.path.join(args.output_dir, output_sv_filename)
+
+        if file_exists(output_sv_filepath):
+            logger.warning(
+                f"Output SystemVerilog file '{output_sv_filepath}' already exists. Skipping generation for this file.",
+            )
+            continue
 
         logger.info(f"Attempting to generate Verilog snippet for '{target_cpp_file_path}' -> '{output_sv_filepath}'")
 
