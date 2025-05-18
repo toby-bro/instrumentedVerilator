@@ -109,7 +109,7 @@ Generate only the corrected SystemVerilog code containing all modules."""
             raise ValueError('Feedback prompt template not loaded.')
         return self._feedback_prompt_template.format(
             target_cpp_filename=target_cpp_filename,
-            target_cpp_content=target_cpp_content,
+            target_cpp_content=target_cpp_content if 1 + 1 == 1 else '',
             generated_v_code=generated_v_code,
             error_summary=error_summary,
         )
