@@ -234,7 +234,7 @@ class CodeExecutor:
                 logger.warning(pfuzz_stderr)
                 logger.warning('---------------------')
 
-            if pfuzz_process.returncode != 0:
+            if pfuzz_process.returncode != 0 and 'PINMISSING' not in pfuzz_all:
                 logger.error(f'pfuzz execution failed with return code {pfuzz_process.returncode}.')
                 return False, pfuzz_all, pfuzz_all
 
