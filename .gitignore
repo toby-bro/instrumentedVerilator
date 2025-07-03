@@ -18,6 +18,7 @@ coverage_reports.bak/yosys/*
 coverage_reports.bak/verilator/*
 !coverage_reports.bak/yosys/comparison
 !coverage_reports.bak/verilator/comparison
+testFiles/yosys_coverage_reports/*
 
 coverage*.json
 
