@@ -12,12 +12,15 @@ from typing import Any
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 
+VERILATOR = False
 
-def process_test(test: str, test_path: str, src_path: str) -> str:
+
+def process_vtor_test(test: str, test_path: str, src_path: str) -> str:
     try:
         verilator_cmd = f"""$VERILATOR_ROOT/bin/verilator --cc --binary \
                             -Wno-MULTIDRIVEN --Wno-UNOPTFLAT --Wno-NOLATCH \
-                            --Wno-WIDTHTRUNC --Wno-CMPCONST --Wno-WIDTHEXPAND --Wno-UNSIGNED \
+                            --Wno-WIDTHTRUNC --Wno-CMPCONST --Wno-WIDTHEXPAND \
+                            --Wno-UNSIGNED --Wno-ASCRANGE --Wno-CASEX \
                             {test_path}/obj_dir_example_sim_{test}/top.sv \
                             -CFLAGS '-I/testFiles/include -I{test_path}/obj_dir_example_sim_{test} -g' \
                             --Mdir {test_path}/obj_dir_example_sim_{test}/obj_dir"""
@@ -42,7 +45,34 @@ def process_test(test: str, test_path: str, src_path: str) -> str:
         return f'ERROR:{test}:{e!s}'
 
 
+def process_yosys_test(test: str, test_path: str, src_path: str) -> str:
+    try:
+        yosys_cmd = f"""yosys -pq 'read_verilog -sv {test_path}/obj_dir_example_sim_{test}/top.sv; \
+                            prep -top top'"""
+
+        p = subprocess.Popen([yosys_cmd], shell=True, cwd=src_path)  # noqa: S602
+        p.wait()
+        if p.returncode != 0:
+            return f'ERROR:{test}:Yosys synthesis failed'
+
+        binary_path = f'{test_path}/obj_dir_example_sim_{test}/top.v'
+        if os.path.exists(binary_path):
+            return f'SUCCESS:{test}'
+        return f'ERROR:{test}:Synthesis output not found'
+
+    except Exception as e:
+        logger.error(f'Exception in worker process for test {test}: {e}')
+        return f'ERROR:{test}:{e!s}'
+
+
 def main(test_path: str, src_path: str) -> None:
+
+    if VERILATOR:
+        process_test = process_vtor_test
+        gcovr_merge = "gcovr --html --html-details -f '.*\\.cpp$' -e '(.*/)?(V3Coverage\\.cpp|V3CoverageJoin\\.cpp|V3EmitCMake\\.cpp|V3EmitXml\\.cpp|V3ExecGraph\\.cpp|V3GraphTest\\.cpp|V3HierBlock\\.cpp|V3Trace\\.cpp|V3TraceDecl\\.cpp)$' -o /testFiles/coverage_reports/coverage_report.html --root /verilator/src"  # noqa: E501
+    else:
+        process_test = process_yosys_test
+
     if not os.path.isdir(test_path):
         logger.error(f'{test_path} is not a valid directory')
         return
@@ -94,7 +124,6 @@ def main(test_path: str, src_path: str) -> None:
                 logger.error(f'Test {test} generated an exception: {exc}')
 
     logger.info('Creating final coverage report')
-    gcovr_merge = "gcovr --html --html-details -f '.*\\.cpp$' -e '(.*/)?(V3Coverage\\.cpp|V3CoverageJoin\\.cpp|V3EmitCMake\\.cpp|V3EmitXml\\.cpp|V3ExecGraph\\.cpp|V3GraphTest\\.cpp|V3HierBlock\\.cpp|V3Trace\\.cpp|V3TraceDecl\\.cpp)$' -o /testFiles/coverage_reports/coverage_report.html --root /verilator/src"  # noqa: E501
     p = subprocess.Popen([gcovr_merge], shell=True, cwd=src_path)  # noqa: S602
     p.wait()
 
