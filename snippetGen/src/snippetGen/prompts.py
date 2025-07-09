@@ -71,6 +71,8 @@ Target C++ file content ('{target_cpp_filename}'):
 {target_cpp_content}
 ```
 
+Coverage of this file is '{coverage_excerpt}'.
+
 Faulty generated SystemVerilog code:
 ```systemverilog
 {generated_v_code}

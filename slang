@@ -1,1 +1,0 @@
-yosys-slang/third_party/slang/
