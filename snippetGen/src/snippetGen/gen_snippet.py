@@ -11,6 +11,9 @@ logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
+VERILATOR_IS_MY_TARGET = False  # This should be set to True if Verilator is the target tool
+
+
 class VerilogSeedGeneratorAgent:
     """
     Generates and refines self-contained SystemVerilog code aimed at exercising
@@ -48,7 +51,7 @@ class VerilogSeedGeneratorAgent:
             logger.error(f'Error reading file {file_path}: {e}')
             raise IOError(f'Could not read file: {file_path}') from e
 
-    def generate_verilog_seed(self, input_cpp_file_path: str, output_v_file_path: str) -> Optional[str]:
+    def generate_verilog_seed(self, input_cpp_file_path: str, output_v_file_path: str, coverage: dict) -> Optional[str]:
         """
         Generates and refines SystemVerilog code until it passes Verilator linting,
         guided by the content of the target C++ file.
@@ -73,6 +76,7 @@ class VerilogSeedGeneratorAgent:
         initial_prompt = self.prompt_manager.get_initial_prompt(
             target_cpp_filename=target_cpp_filename,
             target_cpp_content=target_cpp_content,
+            coverage_excerpt=str(coverage),
         )
 
         generated_v_code = ''
@@ -92,15 +96,7 @@ class VerilogSeedGeneratorAgent:
 
                 self.code_executor.write_code(output_v_file_path, generated_v_code)
 
-                lint_success, lint_stdout, lint_stderr = self.code_executor.lint_verilog(
-                    generated_v_path=output_v_file_path,
-                )
-
-                if lint_success:
-                    logger.info('Verilator linting passed.')
-                    lint_success, lint_stdout, lint_stderr = self.code_executor.simulate_verilog(
-                        generated_v_path=output_v_file_path,
-                    )
+                lint_success, lint_stderr = self.validate_generated_code(output_v_file_path)
 
                 if lint_success:
                     logger.info(
@@ -118,6 +114,7 @@ class VerilogSeedGeneratorAgent:
                         target_cpp_content=target_cpp_content,
                         generated_v_code=generated_v_code,
                         error_summary=lint_stderr.strip(),
+                        coverage_excerpt=str(coverage),
                     )
                 else:
                     logger.error(
@@ -135,6 +132,9 @@ class VerilogSeedGeneratorAgent:
                     return None
             except Exception as e:
                 logger.error(f'An unexpected error occurred during attempt {attempt + 1}: {e}')
+                if 'LLM invocation failed via LiteLLM' in str(e):
+                    logger.error(f'LLM invocation failed. Aborting; {type(e)}-{e}')
+                    raise e
                 if attempt < self.max_retries:
                     logger.info('Retrying generation...')
                     current_prompt = initial_prompt
@@ -144,6 +144,23 @@ class VerilogSeedGeneratorAgent:
 
         logger.error('Failed to generate lint-clean SystemVerilog code after all attempts.')
         return None
+
+    def validate_generated_code(self, output_v_file_path: str) -> tuple[bool, str]:
+        if VERILATOR_IS_MY_TARGET:
+            lint_success, lint_stdout, lint_stderr = self.code_executor.lint_verilog(
+                generated_v_path=output_v_file_path,
+            )
+            if lint_success:
+                logger.info('Verilator linting passed.')
+                lint_success, lint_stdout, lint_stderr = self.code_executor.simulate_verilog(
+                    generated_v_path=output_v_file_path,
+                )
+        else:
+            lint_success, lint_stdout, lint_stderr = self.code_executor.slang_test(
+                generated_v_path=output_v_file_path,
+            )
+
+        return lint_success, lint_stderr
 
 
 if __name__ == '__main__':
@@ -206,6 +223,7 @@ if __name__ == '__main__':
         successful_code = agent.generate_verilog_seed(
             input_cpp_file_path=args.target,
             output_v_file_path=args.output,
+            coverage={},
         )
 
         if successful_code:

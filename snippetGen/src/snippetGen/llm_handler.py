@@ -20,8 +20,8 @@ class LLMHandler:
                         This will be used to determine the model string for LiteLLM.
         """
         if model_type == 'openai':
-            self.model_name = 'gpt-3.5-turbo'
-            self.provider = 'openai'
+            self.model_name = 'o3'  #'o4-mini'
+            self.provider = None
         elif model_type == 'mistral':
             self.model_name = 'mistral/codestral-latest'
             self.provider = 'mistral'
@@ -57,8 +57,13 @@ class LLMHandler:
 
         try:
             logger.info(f'Invoking LLM ({self.model_name}) via LiteLLM...')
-            response = litellm.completion(model=self.model_name, messages=messages, provider=self.provider)
+            if self.provider is None:
+                response = litellm.completion(model=self.model_name, messages=messages)
+            else:
+                response = litellm.completion(model=self.model_name, messages=messages, provider=self.provider)
             logger.info('LLM invocation complete.')
+
+            print(f'LLM response: {response}')
 
             content: Optional[Union[str, Dict]] = None
             if response.choices and response.choices[0].message:

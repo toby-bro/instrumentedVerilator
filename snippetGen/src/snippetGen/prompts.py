@@ -36,11 +36,12 @@ Provide only the complete SystemVerilog code containing all the generated module
         # Initial Prompt - Updated for multiple snippets, GGG prefix, ports, //INJECT
         self._initial_prompt_template = """FIRST identify all the different SystemVerilog features this file is supposed to handle or simulate. THEN Once you identified all the features, that are specific to this file then generate a single SystemVerilog file containing MULTIPLE, modules.
 Each module should target as many lines as possible from the Verilator C++ file '{target_cpp_filename}' (content provided below).
-Analyze the C++ code to understand the Verilog constructs it handles. Generate simple SystemVerilog snippets using these constructs.
+Analyze the C++ code to understand the Verilog constructs it handles. Generate complex but valid SystemVerilog snippets using these constructs, maximising the coverage of the C++ file.
 CRITICAL REQUIREMENTS FOR EACH MODULE:
 1.  Each module MUST have at least one input and one output.
 2.  Each module must be executable within the file context.
 3.  If you have no idea how to correct the error, delete the line that is problematic.
+4.  Each module must have code to maximise the coverage of the C++ file.
 Include as many DIFFERENT modules as possible, each focusing on a different feature this C++ file is supposed to handle.
 Maximise the coverage of the C++ file.
 Ensure the SystemVerilog code is self-contained (minimal/no instantiations) and syntactically correct.
@@ -53,6 +54,12 @@ Content of target C++ file '{target_cpp_filename}':
 ```cpp
 {target_cpp_content}
 ```
+
+Coverage of this file is '{coverage_excerpt}'.
+
+As you can see it is quite low, and you must improve it by all means.
+
+Create at least a module for each different function present in the file.
 
 Generate only the SystemVerilog code containing all modules for this single file."""
 
@@ -88,13 +95,14 @@ Generate only the corrected SystemVerilog code containing all modules."""
             raise ValueError('System prompt template not loaded.')
         return self._system_prompt_template.format(target_cpp_filename=target_cpp_filename)
 
-    def get_initial_prompt(self, target_cpp_filename: str, target_cpp_content: str) -> str:
+    def get_initial_prompt(self, target_cpp_filename: str, target_cpp_content: str, coverage_excerpt: str) -> str:
         """Formats and returns the initial generation prompt."""
         if self._initial_prompt_template is None:
             raise ValueError('Initial prompt template not loaded.')
         return self._initial_prompt_template.format(
             target_cpp_filename=target_cpp_filename,
             target_cpp_content=target_cpp_content,
+            coverage_excerpt=coverage_excerpt,
         )
 
     def get_feedback_prompt(
@@ -103,6 +111,7 @@ Generate only the corrected SystemVerilog code containing all modules."""
         target_cpp_content: str,
         generated_v_code: str,
         error_summary: str,
+        coverage_excerpt: str,
     ) -> str:
         """Formats and returns the feedback prompt for lint error correction."""
         if self._feedback_prompt_template is None:
@@ -112,4 +121,5 @@ Generate only the corrected SystemVerilog code containing all modules."""
             target_cpp_content=target_cpp_content,
             generated_v_code=generated_v_code,
             error_summary=error_summary,
+            coverage_excerpt=coverage_excerpt,
         )
