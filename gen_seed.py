@@ -74,10 +74,6 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def file_exists(file_path: str) -> bool:
-    return os.path.exists(file_path)
-
-
 def get_file_content(file_path: str) -> str | None:
     """Reads the entire content of a file."""
     try:
@@ -202,12 +198,6 @@ def generate_verilog_snippets_for_low_covered_functions(
         output_sv_filename = f'{base_cpp_filename}_{sanitized_function_name}.sv'
         output_sv_filepath = os.path.join(args.output_dir, output_sv_filename)
 
-        if file_exists(output_sv_filepath):
-            logger.warning(
-                f"Output SystemVerilog file '{output_sv_filepath}' already exists. Skipping generation for this function.",
-            )
-            continue
-
         logger.info(f"Attempting to generate Verilog snippet for function '{function_name}' -> '{output_sv_filepath}'")
 
         try:
@@ -311,12 +301,6 @@ def generate_verilog_snippets_for_low_percent_files(
         base_cpp_filename = os.path.basename(target_cpp_file_path)
         output_sv_filename = base_cpp_filename.replace('.cpp', '.sv')
         output_sv_filepath = os.path.join(args.output_dir, output_sv_filename)
-
-        if file_exists(output_sv_filepath):
-            logger.warning(
-                f"Output SystemVerilog file '{output_sv_filepath}' already exists. Skipping generation for this file.",
-            )
-            continue
 
         logger.info(f"Attempting to generate Verilog snippet for '{target_cpp_file_path}' -> '{output_sv_filepath}'")
 

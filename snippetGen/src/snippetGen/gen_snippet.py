@@ -1,7 +1,7 @@
 import argparse
 import logging
 import os
-from typing import Literal, Optional
+from typing import Literal
 
 from snippetGen.code_executor import CodeExecutor
 from snippetGen.llm_handler import LLMHandler
@@ -51,7 +51,7 @@ class VerilogSeedGeneratorAgent:
             logger.error(f'Error reading file {file_path}: {e}')
             raise IOError(f'Could not read file: {file_path}') from e
 
-    def generate_verilog_seed(self, input_cpp_file_path: str, output_v_file_path: str, coverage: dict) -> Optional[str]:
+    def generate_verilog_seed(self, input_cpp_file_path: str, output_v_file_path: str, coverage: dict) -> bool:
         """
         Generates and refines SystemVerilog code until it passes Verilator linting,
         guided by the content of the target C++ file.
@@ -70,7 +70,7 @@ class VerilogSeedGeneratorAgent:
             target_cpp_filename = os.path.basename(input_cpp_file_path)
         except (FileNotFoundError, IOError):
             logger.error(f'Failed to read target C++ file: {input_cpp_file_path}')
-            return None
+            return False
 
         system_prompt = self.prompt_manager.get_system_prompt(target_cpp_filename=target_cpp_filename)
         initial_prompt = self.prompt_manager.get_initial_prompt(
@@ -80,7 +80,23 @@ class VerilogSeedGeneratorAgent:
         )
 
         generated_v_code = ''
-        current_prompt = initial_prompt
+
+        if os.path.exists(output_v_file_path):
+            generated_v_code = self._read_file(output_v_file_path)
+            logger.info(f'Output file {output_v_file_path} already exists. Attempting to read existing code.')
+            lint_success, lint_stderr = self.validate_generated_code(output_v_file_path)
+            current_prompt = self.prompt_manager.get_feedback_prompt(
+                target_cpp_filename=target_cpp_filename,
+                target_cpp_content=target_cpp_content,
+                generated_v_code=generated_v_code,
+                error_summary=lint_stderr.strip() if not lint_success else '',
+                coverage_excerpt=str(coverage),
+            )
+            if lint_success:
+                logger.info(f'Existing code is lint-clean: {output_v_file_path}')
+                return True
+        else:
+            current_prompt = initial_prompt
 
         for attempt in range(self.max_retries + 1):
             logger.info(f'--- Attempt {attempt + 1} of {self.max_retries + 1} ---')
@@ -102,7 +118,7 @@ class VerilogSeedGeneratorAgent:
                     logger.info(
                         f'Successfully generated and linted SystemVerilog code: {output_v_file_path}',
                     )
-                    return generated_v_code
+                    return True
 
                 error_summary = f'Verilator Linting failed.\nStderr:\n{lint_stderr.strip()}'
                 logger.error(f'Linting Error details:\n{error_summary}')
@@ -120,7 +136,7 @@ class VerilogSeedGeneratorAgent:
                     logger.error(
                         'Maximum retries reached. Failed to generate lint-clean SystemVerilog code.',
                     )
-                    return None
+                    return False
 
             except (IOError, RuntimeError, ValueError) as e:
                 logger.error(f'An error occurred during attempt {attempt + 1}: {e}')
@@ -129,7 +145,7 @@ class VerilogSeedGeneratorAgent:
                     current_prompt = initial_prompt
                 else:
                     logger.error('Failed due to error after maximum retries.')
-                    return None
+                    return False
             except Exception as e:
                 logger.error(f'An unexpected error occurred during attempt {attempt + 1}: {e}')
                 if 'LLM invocation failed via LiteLLM' in str(e):
@@ -140,10 +156,10 @@ class VerilogSeedGeneratorAgent:
                     current_prompt = initial_prompt
                 else:
                     logger.error('Failed due to unexpected error after maximum retries.')
-                    return None
+                    return False
 
         logger.error('Failed to generate lint-clean SystemVerilog code after all attempts.')
-        return None
+        return False
 
     def validate_generated_code(self, output_v_file_path: str) -> tuple[bool, str]:
         if VERILATOR_IS_MY_TARGET:
