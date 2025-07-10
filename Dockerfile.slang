@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip3 install git+https://github.com/RPGillespie6/fastcov.git --break-system-packages
 
-RUN git clone --depth 1 https://github.com/povik/slang.git /slang
+RUN git clone --depth 1 https://github.com/MikePopoloski/slang.git /slang
 
 WORKDIR /slang
 
