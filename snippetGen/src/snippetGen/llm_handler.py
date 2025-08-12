@@ -20,7 +20,7 @@ class LLMHandler:
                         This will be used to determine the model string for LiteLLM.
         """
         if model_type == 'openai':
-            self.model_name = 'o3'  #'o4-mini'
+            self.model_name = 'o3'  #'o4-mini' / 'o3'
             self.provider = None
         elif model_type == 'mistral':
             self.model_name = 'mistral/codestral-latest'
@@ -29,7 +29,7 @@ class LLMHandler:
             self.model_name = 'gemini-2.5-pro-exp-03-25'
             self.provider = 'gemini'
         elif model_type == 'gemini':
-            self.model_name = 'gemini/gemini-2.5-flash-preview-04-17'
+            self.model_name = 'gemini/gemini-2.5-flash-preview-05-20'
             self.provider = 'gemini'
         else:
             raise ValueError(f'Unsupported model type: {model_type}')
