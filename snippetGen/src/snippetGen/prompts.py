@@ -87,7 +87,8 @@ Please analyze the faulty SystemVerilog code, and the lint errors. Provide a cor
 1.  Each module targets a specific construct relevant to the C++ file, try not to simplify too much the code.
 2.  EACH module MUST have at least one input and one output.
 3.  Maximize the coverage of the C++ file.
-3.  No comments
+4.  No comments
+5.  FIX ALL THE ERRORS (try avoiding deleting the lines unless you have absolutely no idea how to fix the error).
 Ensure the code remains self-contained within the single file and avoids simulation-specific constructs or timing delays.
 Generate only the corrected SystemVerilog code containing all modules."""
 
