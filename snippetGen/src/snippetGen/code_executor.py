@@ -205,7 +205,7 @@ class CodeExecutor:
 
         pfuzz_args = [
             pfuzz_exe,
-            '-check-file',
+            'check-file',
             '-file',
             generated_v_path,
         ]
