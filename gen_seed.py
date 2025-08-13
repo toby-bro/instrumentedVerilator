@@ -147,6 +147,9 @@ def generate_verilog_snippets_for_low_covered_functions(
         if cpp_file_path_in_report.startswith('/slang/'):
             relative_path_from_slang_root = cpp_file_path_in_report.removeprefix('/slang/')
             target_cpp_file_path = os.path.join('slang', relative_path_from_slang_root)
+        elif cpp_file_path_in_report.startswith('/verilator/'):
+            relative_path_from_verilator_root = cpp_file_path_in_report.removeprefix('/verilator/')
+            target_cpp_file_path = os.path.join('verilator', relative_path_from_verilator_root)
         else:
             # Handle other potential paths in the coverage report if necessary
             logger.warning(f'Unexpected file path format in coverage report: {cpp_file_path_in_report}. Skipping.')
@@ -281,6 +284,9 @@ def generate_verilog_snippets_for_low_percent_files(
                 'slang',
                 relative_path_from_slang_root,
             )
+        elif cpp_file_path_in_report.startswith('/verilator/'):
+            relative_path_from_verilator_root = cpp_file_path_in_report.removeprefix('/verilator/')
+            target_cpp_file_path = os.path.join('verilator', relative_path_from_verilator_root)
         else:
             # Handle other potential paths in the coverage report if necessary
             logger.warning(f'Unexpected file path format in coverage report: {cpp_file_path_in_report}. Skipping.')
