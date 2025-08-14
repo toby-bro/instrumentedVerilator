@@ -43,7 +43,7 @@ TOOLS: Dict[str, ToolConfig] = {
         ),
     },
     'slang': {
-        'image': 'ghcr.io/toby-bro/instrumented-slang:main',
+        'image': 'ghcr.io/toby-bro/instrumentedslang:main',
         'container': 'cov-json-slang',
         'get_exec_cmd_make': ['make', 'getExecSlangFileCmd'],
         'coverage_cmd': (
