@@ -154,7 +154,7 @@ getExecYosysFileCmd:
 	
 .PHONY: getExecSlangFileCmd
 getExecSlangFileCmd:
-	@echo 'slang --error-limit=0 file.sv'
+	@echo '/slang/build/bin/slang --error-limit=0 file.sv'
 
 .PHONY: checkGeneratedStatus
 checkGeneratedStatus:
