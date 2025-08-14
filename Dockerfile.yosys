@@ -49,8 +49,8 @@ ENV LINKFLAGS="-lgcov --coverage"
 
 # Build Yosys with coverage instrumentation
 RUN make config-gcc
-RUN make -j `nproc` ABCEXTERNAL=/scratch/jnstrauss/instrumentedVerilator/yosys/abc/abc
-RUN make install ABCEXTERNAL=/scratch/jnstrauss/instrumentedVerilator/yosys/abc/abc
+RUN make -j `nproc` ABCEXTERNAL=/yosys/abc/abc
+RUN make install ABCEXTERNAL=/yosys/abc/abc
 
 # Set environment variables
 ENV PREFIX="/yosys"
