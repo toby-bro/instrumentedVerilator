@@ -168,8 +168,9 @@ async def run_batch(fuzzer: str, dataset_root: Path, n: int, templates: Dict[str
     logging.info('[%s] Selected %d files from %s', fuzzer, len(files), src_dir)
 
     # Start all containers in parallel
-    container_tasks = {tool: start_container(tool) for tool in TOOLS}
-    containers = {tool: await task for tool, task in container_tasks.items()}
+    container_tasks = [start_container(tool) for tool in TOOLS]
+    containers_list = await asyncio.gather(*container_tasks)
+    containers = dict(zip(TOOLS.keys(), containers_list, strict=True))
 
     try:
         # Process files for each tool in parallel
