@@ -56,20 +56,7 @@ TOOLS: Dict[str, ToolConfig] = {
 }
 
 
-def run(cmd: List[str], check: bool = True, capture: bool = False, cwd: str | None = None) -> str:
-    logging.debug('+ %s', ' '.join(shlex.quote(c) for c in cmd))
-    # Basic validation to avoid executing untrusted input
-    if any((not isinstance(a, str)) or ('\n' in a or '\r' in a) for a in cmd):
-        raise ValueError('Invalid command argument detected')
-    allowed = {'docker', 'make'}
-    if not cmd or cmd[0] not in allowed:
-        raise ValueError(f'Command not allowed: {cmd[0] if cmd else cmd}')
-    # Commands are constructed from constants; avoid shell=True
-    res = subprocess.run(cmd, check=check, text=True, capture_output=capture, cwd=cwd)  # nosec B603
-    return res.stdout.strip() if capture else ''
-
-
-async def run_async(cmd: List[str], check: bool = True, capture: bool = False, cwd: str | None = None) -> str:
+async def run(cmd: List[str], check: bool = True, capture: bool = False, cwd: str | None = None) -> str:
     logging.debug('+ %s', ' '.join(shlex.quote(c) for c in cmd))
     # Basic validation to avoid executing untrusted input
     if any((not isinstance(a, str)) or ('\n' in a or '\r' in a) for a in cmd):
@@ -108,14 +95,14 @@ def pick_verilog_files(src_dir: Path, n: int) -> List[Path]:
     return random.sample(files, n)
 
 
-def start_container(tool: str) -> str:
+async def start_container(tool: str) -> str:
     cfg = TOOLS[tool]
     container = cfg['container']
     image = cfg['image']
     # Mount testFiles, naive, and chimera root; workdir /testFiles
     # Stop any previous container with same name (best-effort)
-    run(['docker', 'stop', container], check=False)
-    run(
+    await run(['docker', 'stop', container], check=False)
+    await run(
         [
             'docker',
             'run',
@@ -139,53 +126,18 @@ def start_container(tool: str) -> str:
     return container
 
 
-async def start_container_async(tool: str) -> str:
-    cfg = TOOLS[tool]
-    container = cfg['container']
-    image = cfg['image']
-    # Mount testFiles, naive, and chimera root; workdir /testFiles
-    # Stop any previous container with same name (best-effort)
-    await run_async(['docker', 'stop', container], check=False)
-    await run_async(
-        [
-            'docker',
-            'run',
-            '-d',
-            '--rm',
-            '--name',
-            container,
-            '-v',
-            f'{TESTFILES}:/testFiles',
-            '-v',
-            f'{NAIVE_ROOT}:/naive',
-            '-v',
-            f'{ROOT.parent / "chimera"}:/chimera',
-            '--workdir',
-            '/testFiles',
-            image,
-            'sleep',
-            '3600',
-        ],
-    )
-    return container
+async def stop_container(container: str) -> None:
+    await run(['docker', 'stop', container], check=False)
 
 
-def stop_container(container: str) -> None:
-    run(['docker', 'stop', container], check=False)
-
-
-async def stop_container_async(container: str) -> None:
-    await run_async(['docker', 'stop', container], check=False)
-
-
-def get_exec_template(tool: str) -> str:
+async def get_exec_template(tool: str) -> str:
     # Use Makefile helpers to get the per-file command template
-    out = run(TOOLS[tool]['get_exec_cmd_make'], capture=True, cwd=str(ROOT))
+    out = await run(TOOLS[tool]['get_exec_cmd_make'], capture=True, cwd=str(ROOT))
     # It may echo quotes/shell constructs. We'll execute via bash -lc inside container.
     return out.strip()
 
 
-def exec_file_in_tool(container: str, tmpl: str, file_path_in_container: str) -> None:
+async def exec_file_in_tool(container: str, tmpl: str, file_path_in_container: str) -> None:
     # Replace common placeholders used in Makefile helpers
     if 'file.sv' in tmpl:
         cmd = tmpl.replace('file.sv', file_path_in_container)
@@ -195,76 +147,16 @@ def exec_file_in_tool(container: str, tmpl: str, file_path_in_container: str) ->
         # Last resort: append path (not expected for provided Makefile)
         cmd = f'{tmpl} {shlex.quote(file_path_in_container)}'
     # Use bash -lc to respect quoting inside template
-    run(['docker', 'exec', container, '/bin/bash', '-lc', cmd], check=False)
+    await run(['docker', 'exec', container, '/bin/bash', '-lc', cmd], check=False)
 
 
-async def exec_file_in_tool_async(container: str, tmpl: str, file_path_in_container: str) -> None:
-    # Replace common placeholders used in Makefile helpers
-    if 'file.sv' in tmpl:
-        cmd = tmpl.replace('file.sv', file_path_in_container)
-    elif 'file.v' in tmpl:
-        cmd = tmpl.replace('file.v', file_path_in_container)
-    else:
-        # Last resort: append path (not expected for provided Makefile)
-        cmd = f'{tmpl} {shlex.quote(file_path_in_container)}'
-    # Use bash -lc to respect quoting inside template
-    await run_async(['docker', 'exec', container, '/bin/bash', '-lc', cmd], check=False)
-
-
-def dump_json_coverage(container: str, tool: str, out_basename: str) -> None:
+async def dump_json_coverage(container: str, tool: str, out_basename: str) -> None:
     out_path = f'/testFiles/{out_basename}'
     cov_cmd = TOOLS[tool]['coverage_cmd'].format(out=out_path)
-    run(['docker', 'exec', container, '/bin/bash', '-lc', cov_cmd])
+    await run(['docker', 'exec', container, '/bin/bash', '-lc', cov_cmd])
 
 
-async def dump_json_coverage_async(container: str, tool: str, out_basename: str) -> None:
-    out_path = f'/testFiles/{out_basename}'
-    cov_cmd = TOOLS[tool]['coverage_cmd'].format(out=out_path)
-    await run_async(['docker', 'exec', container, '/bin/bash', '-lc', cov_cmd])
-
-
-def run_batch(fuzzer: str, dataset_root: Path, n: int, templates: Dict[str, str]) -> None:
-    src_dir = dataset_root / fuzzer
-    if not src_dir.is_dir():
-        logging.warning('Skipping %s: %s does not exist', fuzzer, src_dir)
-        return
-    files = pick_verilog_files(src_dir, n)
-    if not files:
-        logging.warning('No .v files found in %s; skipping %s', src_dir, fuzzer)
-        return
-    logging.info('[%s] Selected %d files from %s', fuzzer, len(files), src_dir)
-
-    containers: Dict[str, str] = {}
-    try:
-        for tool in TOOLS:
-            containers[tool] = start_container(tool)
-
-        for tool, container in containers.items():
-            for f in files:
-                chimera_root = (ROOT.parent / 'chimera').resolve()
-                naive_root = NAIVE_ROOT.resolve()
-                try:
-                    rel = f.resolve().relative_to(chimera_root)
-                    file_in_container = f'/chimera/{rel.as_posix()}'
-                except ValueError:
-                    try:
-                        rel = f.resolve().relative_to(naive_root)
-                        file_in_container = f'/naive/{rel.as_posix()}'
-                    except ValueError:
-                        logging.warning('Skipping file outside mounted roots: %s', f)
-                        continue
-                exec_file_in_tool(container, templates[tool], file_in_container)
-
-        for tool, container in containers.items():
-            out_name = f'coverage-{tool}-{fuzzer}.json'
-            dump_json_coverage(container, tool, out_name)
-            logging.info('[%s] Wrote %s', fuzzer, out_name)
-    finally:
-        for container in containers.values():
-            stop_container(container)
-
-
-async def run_batch_async(fuzzer: str, dataset_root: Path, n: int, templates: Dict[str, str]) -> None:
+async def run_batch(fuzzer: str, dataset_root: Path, n: int, templates: Dict[str, str]) -> None:
     src_dir = dataset_root / fuzzer
     if not src_dir.is_dir():
         logging.warning('Skipping %s: %s does not exist', fuzzer, src_dir)
@@ -276,7 +168,7 @@ async def run_batch_async(fuzzer: str, dataset_root: Path, n: int, templates: Di
     logging.info('[%s] Selected %d files from %s', fuzzer, len(files), src_dir)
 
     # Start all containers in parallel
-    container_tasks = {tool: start_container_async(tool) for tool in TOOLS}
+    container_tasks = {tool: start_container(tool) for tool in TOOLS}
     containers = {tool: await task for tool, task in container_tasks.items()}
 
     try:
@@ -295,7 +187,7 @@ async def run_batch_async(fuzzer: str, dataset_root: Path, n: int, templates: Di
                     except ValueError:
                         logging.warning('Skipping file outside mounted roots: %s', f)
                         continue
-                await exec_file_in_tool_async(container, templates[tool], file_in_container)
+                await exec_file_in_tool(container, templates[tool], file_in_container)
 
         # Run all tools in parallel for processing files
         tool_tasks = [process_tool_files(tool, container) for tool, container in containers.items()]
@@ -303,7 +195,7 @@ async def run_batch_async(fuzzer: str, dataset_root: Path, n: int, templates: Di
 
         # Dump coverage for all tools in parallel
         dump_tasks = [
-            dump_json_coverage_async(container, tool, f'coverage-{tool}-{fuzzer}.json')
+            dump_json_coverage(container, tool, f'coverage-{tool}-{fuzzer}.json')
             for tool, container in containers.items()
         ]
         await asyncio.gather(*dump_tasks)
@@ -313,7 +205,7 @@ async def run_batch_async(fuzzer: str, dataset_root: Path, n: int, templates: Di
 
     finally:
         # Stop all containers in parallel
-        stop_tasks = [stop_container_async(container) for container in containers.values()]
+        stop_tasks = [stop_container(container) for container in containers.values()]
         await asyncio.gather(*stop_tasks, return_exceptions=True)
 
 
@@ -350,11 +242,6 @@ def main() -> int:
         default=['vloghammer', 'verismith', 'transfuzz'],
         help='Fuzzer subfolders to run in order (default: vloghammer verismith transfuzz)',
     )
-    ap.add_argument(
-        '--parallel',
-        action='store_true',
-        help='Run containers in parallel for each fuzzer (default: False for sequential)',
-    )
     args = ap.parse_args()
 
     src_dir = _resolve_source_dir(args.source_dir)
@@ -365,23 +252,17 @@ def main() -> int:
     TESTFILES.mkdir(parents=True, exist_ok=True)
     (TESTFILES / 'synth_out').mkdir(parents=True, exist_ok=True)
 
+    # Run everything async since we removed sync functions
+    return asyncio.run(main_async(args.fuzzers, src_dir, args.count))
+
+
+async def main_async(fuzzers: List[str], src_dir: Path, count: int) -> int:
     # Prepare per-tool exec templates once
-    templates = {tool: get_exec_template(tool) for tool in TOOLS}
+    templates = {tool: await get_exec_template(tool) for tool in TOOLS}
 
-    if args.parallel:
-        return asyncio.run(main_async(args.fuzzers, src_dir, args.count, templates))
-
-    # Run batches sequentially (original behavior)
-    for fuzzer in args.fuzzers:
-        run_batch(fuzzer, src_dir, args.count, templates)
-
-    return 0
-
-
-async def main_async(fuzzers: List[str], src_dir: Path, count: int, templates: Dict[str, str]) -> int:
     # Run batches sequentially, but with parallel container execution within each batch
     for fuzzer in fuzzers:
-        await run_batch_async(fuzzer, src_dir, count, templates)
+        await run_batch(fuzzer, src_dir, count, templates)
     return 0
 
 
