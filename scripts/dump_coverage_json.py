@@ -26,7 +26,7 @@ TOOLS: Dict[str, ToolConfig] = {
         'container': 'cov-json-verilator',
         'get_exec_cmd_make': ['make', 'getExecOneFileCmd'],
         'coverage_cmd': (
-            "fastcov -o /testFiles/coverage-verilator.json -b -d /verilator/src "
+            "fastcov -o {out} -b -d /verilator/src "
             "--exclude-glob '*.[hly]' --include .cpp --exclude /usr/include "
             "V3Coverage.cpp V3CoverageJoin.cpp V3EmitCMake.cpp V3EmitXml.cpp "
             "V3ExecGraph.cpp V3GraphTest.cpp V3HierBlock.cpp V3Trace.cpp V3TraceDecl.cpp "
@@ -39,8 +39,17 @@ TOOLS: Dict[str, ToolConfig] = {
         'container': 'cov-json-yosys',
         'get_exec_cmd_make': ['make', 'getExecYosysFileCmd'],
         'coverage_cmd': (
-            "fastcov -o /testFiles/coverage-yosys.json -b -d /yosys/ "
-            "--exclude-glob '*.[hly]' --include .cc .cpp --exclude /usr/include"
+            "fastcov -o {out} -b -d /yosys/ --exclude-glob '*.[hly]' --include .cc .cpp --exclude /usr/include"
+        ),
+    },
+    'slang': {
+        'image': 'ghcr.io/toby-bro/instrumented-slang:main',
+        'container': 'cov-json-slang',
+        'get_exec_cmd_make': ['make', 'getExecSlangFileCmd'],
+        'coverage_cmd': (
+            "fastcov -o {out} -b -d /slang/ "
+            "--exclude-glob '*.[hly]' --include .cc .cpp --exclude /usr/include "
+            "analysis/ diagnostics/ driver/ numeric/ syntax/ text/ util/ /slang/build "
         ),
     },
 }
@@ -61,6 +70,8 @@ def run(cmd: List[str], check: bool = True, capture: bool = False, cwd: str | No
 
 def pick_verilog_files(src_dir: Path, n: int) -> List[Path]:
     files = [p for p in src_dir.rglob('*.v') if p.is_file()]
+    if len(files) == 0:
+        files = [p for p in src_dir.rglob('*.sv') if p.is_file()]
     if len(files) < n:
         return files
     return random.sample(files, n)
@@ -71,6 +82,8 @@ def start_container(tool: str) -> str:
     container = cfg['container']
     image = cfg['image']
     # Mount testFiles, naive, and chimera root; workdir /testFiles
+    # Stop any previous container with same name (best-effort)
+    run(['docker', 'stop', container], check=False)
     run(
         [
             'docker',
@@ -119,9 +132,51 @@ def exec_file_in_tool(container: str, tmpl: str, file_path_in_container: str) ->
     run(['docker', 'exec', container, '/bin/bash', '-lc', cmd], check=False)
 
 
-def dump_json_coverage(container: str, tool: str) -> None:
-    cov_cmd = TOOLS[tool]['coverage_cmd']
+def dump_json_coverage(container: str, tool: str, out_basename: str) -> None:
+    out_path = f'/testFiles/{out_basename}'
+    cov_cmd = TOOLS[tool]['coverage_cmd'].format(out=out_path)
     run(['docker', 'exec', container, '/bin/bash', '-lc', cov_cmd])
+
+
+def run_batch(fuzzer: str, dataset_root: Path, n: int, templates: Dict[str, str]) -> None:
+    src_dir = dataset_root / fuzzer
+    if not src_dir.is_dir():
+        logging.warning('Skipping %s: %s does not exist', fuzzer, src_dir)
+        return
+    files = pick_verilog_files(src_dir, n)
+    if not files:
+        logging.warning('No .v files found in %s; skipping %s', src_dir, fuzzer)
+        return
+    logging.info('[%s] Selected %d files from %s', fuzzer, len(files), src_dir)
+
+    containers: Dict[str, str] = {}
+    try:
+        for tool in TOOLS:
+            containers[tool] = start_container(tool)
+
+        for tool, container in containers.items():
+            for f in files:
+                chimera_root = (ROOT.parent / 'chimera').resolve()
+                naive_root = NAIVE_ROOT.resolve()
+                try:
+                    rel = f.resolve().relative_to(chimera_root)
+                    file_in_container = f'/chimera/{rel.as_posix()}'
+                except ValueError:
+                    try:
+                        rel = f.resolve().relative_to(naive_root)
+                        file_in_container = f'/naive/{rel.as_posix()}'
+                    except ValueError:
+                        logging.warning('Skipping file outside mounted roots: %s', f)
+                        continue
+                exec_file_in_tool(container, templates[tool], file_in_container)
+
+        for tool, container in containers.items():
+            out_name = f'coverage-{tool}-{fuzzer}.json'
+            dump_json_coverage(container, tool, out_name)
+            logging.info('[%s] Wrote %s', fuzzer, out_name)
+    finally:
+        for container in containers.values():
+            stop_container(container)
 
 
 def _resolve_source_dir(preferred: Path) -> Path | None:
@@ -150,7 +205,13 @@ def main() -> int:
         default=CHIMERA_DEFAULT,
         help='Directory containing .v files, can be the dataset root (default: ../chimera/3k_programs_for_bugs)',
     )
-    ap.add_argument('-n', '--count', type=int, default=50, help='Number of files to run (default: 50)')
+    ap.add_argument('-n', '--count', type=int, default=50, help='Number of files to run per fuzzer (default: 50)')
+    ap.add_argument(
+        '--fuzzers',
+        nargs='*',
+        default=['vloghammer', 'verismith', 'transfuzz'],
+        help='Fuzzer subfolders to run in order (default: vloghammer verismith transfuzz)',
+    )
     args = ap.parse_args()
 
     src_dir = _resolve_source_dir(args.source_dir)
@@ -161,50 +222,12 @@ def main() -> int:
     TESTFILES.mkdir(parents=True, exist_ok=True)
     (TESTFILES / 'synth_out').mkdir(parents=True, exist_ok=True)
 
-    files = pick_verilog_files(src_dir, args.count)
-    if not files:
-        logging.error('No .v files found in %s', src_dir)
-        return 1
-    logging.info('Selected %d files from %s', len(files), src_dir)
-
-    # Prepare per-tool exec templates
+    # Prepare per-tool exec templates once
     templates = {tool: get_exec_template(tool) for tool in TOOLS}
 
-    # Start both containers
-    containers = {}
-    try:
-        for tool in TOOLS:
-            containers[tool] = start_container(tool)
-
-        # Execute files in each container
-        for tool, container in containers.items():
-            for f in files:
-                # Map host chimera path to /chimera in container
-                # If f is like /path/.../chimera/3k_programs_for_bugs/verismith/foo.sv
-                # then we can construct /chimera/3k_programs_for_bugs/verismith/foo.sv
-                # by finding subpath after the chimera root
-                chimera_root = (ROOT.parent / 'chimera').resolve()
-                naive_root = NAIVE_ROOT.resolve()
-                try:
-                    rel = f.resolve().relative_to(chimera_root)
-                    file_in_container = f'/chimera/{rel.as_posix()}'
-                except ValueError:
-                    try:
-                        rel = f.resolve().relative_to(naive_root)
-                        file_in_container = f'/naive/{rel.as_posix()}'
-                    except ValueError:
-                        logging.warning('Skipping file outside mounted roots: %s', f)
-                        continue
-                exec_file_in_tool(container, templates[tool], file_in_container)
-
-        # Dump coverage JSONs
-        for tool, container in containers.items():
-            dump_json_coverage(container, tool)
-            logging.info('Wrote JSON for %s under testFiles/', tool)
-
-    finally:
-        for container in containers.values():
-            stop_container(container)
+    # Run batches sequentially
+    for fuzzer in args.fuzzers:
+        run_batch(fuzzer, src_dir, args.count, templates)
 
     return 0
 

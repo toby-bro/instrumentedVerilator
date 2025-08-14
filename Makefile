@@ -150,7 +150,11 @@ getExecOneFileCmd:
 
 .PHONY: getExecYosysFileCmd
 getExecYosysFileCmd:
-	@echo 'yosys -p "read_verilog file.sv; synth -top top; write_verilog /testFiles/synth_out/synth.v"'
+	@echo 'yosys -p "read_verilog -sv file.sv; synth -top top; write_verilog -noattr /testFiles/synth_out/synth.v"'
+	
+.PHONY: getExecSlangFileCmd
+getExecSlangFileCmd:
+	@echo 'slang --error-limit=0 file.sv'
 
 .PHONY: checkGeneratedStatus
 checkGeneratedStatus:
