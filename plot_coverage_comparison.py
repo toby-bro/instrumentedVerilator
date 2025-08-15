@@ -129,21 +129,33 @@ def _canonical_fuzzer(fuz_token: str) -> str:
 
 
 def collect_data_from_fastcov(json_dirs: Optional[List[str]] = None) -> pd.DataFrame:
-    """Scan for coverage-<tool>-<fuzzer>.json and collect coverage via fastcov_summary.
+    """Scan recursively for coverage-<tool>-<fuzzer>.json and collect coverage via fastcov_summary.
 
-    By default, looks under testFiles/.
+    If files reside inside experiment_* folders, the experiment label is extracted and
+    attached to each row so we can compute error bars across experiments.
+
+    By default, looks under current directory and testFiles/.
     """
-    search_dirs = json_dirs or ['testFiles']
-    patterns = [os.path.join(d, 'coverage-*-*.json') for d in search_dirs]
+    search_dirs = json_dirs or ['.', 'testFiles']
     files: List[str] = []
-    for pat in patterns:
-        files.extend(glob.glob(pat))
+    for base in search_dirs:
+        # Recurse to find coverage JSONs in experiment_XX directories
+        pattern = os.path.join(base, '**/experiment_[0-9][0-9]/**/coverage-*-*.json')
+        files.extend(glob.glob(pattern, recursive=True))
 
     if not files:
         logging.warning(
             'No fastcov JSON files found (expected pattern coverage-<tool>-<fuzzer>.json). Using empty dataset.',
         )
-        return pd.DataFrame(columns=['Tool', 'Fuzzer', 'Coverage', 'Type'])
+        return pd.DataFrame(columns=['Tool', 'Fuzzer', 'Coverage', 'Type', 'Experiment'])
+
+    # Helper to extract an experiment tag from a path (e.g., experiment_01)
+    def _find_experiment_tag(p: str) -> str:
+        parts = os.path.normpath(p).split(os.sep)
+        for seg in parts:
+            if re.match(r'^experiment[_-]?\d+', seg, re.IGNORECASE):
+                return seg
+        return 'run'
 
     rows: List[Dict[str, object]] = []
     for path in sorted(files):
@@ -151,18 +163,43 @@ def collect_data_from_fastcov(json_dirs: Optional[List[str]] = None) -> pd.DataF
         # Expect coverage-<tool>-<fuzzer>.json
         m = re.match(r'coverage-([A-Za-z0-9]+)-([A-Za-z0-9_.\-]+)\.json$', base)
         if not m:
-            logging.debug(f'Skipping non-matching file name: {base}')
+            logging.debug('Skipping non-matching file name: %s', base)
             continue
         tool_tok, fuz_tok = m.group(1), m.group(2)
         tool = _canonical_tool(tool_tok)
         fuzzer = _canonical_fuzzer(fuz_tok)
+        experiment = _find_experiment_tag(path)
         parsed = fastcov_summary(path)
         if parsed is None:
             continue
         line_pct, func_pct, branch_pct = parsed
-        rows.append({'Tool': tool, 'Fuzzer': fuzzer, 'Coverage': branch_pct, 'Type': 'Branch'})
-        rows.append({'Tool': tool, 'Fuzzer': fuzzer, 'Coverage': line_pct, 'Type': 'Line'})
-        rows.append({'Tool': tool, 'Fuzzer': fuzzer, 'Coverage': func_pct, 'Type': 'Function'})
+        rows.append(
+            {
+                'Tool': tool,
+                'Fuzzer': fuzzer,
+                'Coverage': branch_pct,
+                'Type': 'Branch',
+                'Experiment': experiment,
+            },
+        )
+        rows.append(
+            {
+                'Tool': tool,
+                'Fuzzer': fuzzer,
+                'Coverage': line_pct,
+                'Type': 'Line',
+                'Experiment': experiment,
+            },
+        )
+        rows.append(
+            {
+                'Tool': tool,
+                'Fuzzer': fuzzer,
+                'Coverage': func_pct,
+                'Type': 'Function',
+                'Experiment': experiment,
+            },
+        )
 
     return pd.DataFrame(rows)
 
@@ -202,13 +239,18 @@ def _aggregate_data_for_plot(dfi: pd.DataFrame) -> pd.DataFrame:
     """Aggregate coverage to mean and 95% CI by (Tool, Fuzzer, Type)."""
     group_cols = ['Tool', 'Fuzzer', 'Type']
     if 'Experiment' in dfi.columns:
-        agg = dfi.groupby(group_cols, as_index=False)['Coverage'].agg(['mean', 'std', 'count']).reset_index()
+        agg = dfi.groupby(group_cols, as_index=False).agg(
+            mean=('Coverage', 'mean'),
+            std=('Coverage', 'std'),
+            count=('Coverage', 'count'),
+        )
         agg['se'] = agg['std'] / (agg['count'] ** 0.5)
         agg['ci'] = 1.96 * agg['se']
-    else:
-        agg = dfi.groupby(group_cols, as_index=False)['Coverage'].agg(['mean']).reset_index()
-        agg['ci'] = 0.0
-    return agg
+        return agg[['Tool', 'Fuzzer', 'Type', 'mean', 'ci']]
+    # No experiment column; just compute mean and set CI to 0
+    agg = dfi.groupby(group_cols, as_index=False).agg(mean=('Coverage', 'mean'))
+    agg['ci'] = 0.0
+    return agg[['Tool', 'Fuzzer', 'Type', 'mean', 'ci']]
 
 
 def _compute_plot_settings(fuzzers_order: List[str]) -> Tuple[
@@ -227,13 +269,13 @@ def _compute_plot_settings(fuzzers_order: List[str]) -> Tuple[
 
 
 def _build_positions(tools_order: List[str], fuzzers_order: List[str]) -> Tuple[List[int], List[str]]:
-    """Build x-axis positions and labels for tool-fuzzer combinations."""
+    """Build x positions for all combinations; x tick labels will show fuzzer names only."""
     base_positions: list[int] = []
     xticklabels: list[str] = []
-    for tool in tools_order:
+    for _tool in tools_order:
         for fuz in fuzzers_order:
             base_positions.append(len(base_positions))
-            xticklabels.append(f'{tool}\n{fuz}')
+            xticklabels.append(fuz)
     return base_positions, xticklabels
 
 
@@ -275,19 +317,22 @@ def _plot_block(
         ax.plot(sx, sy, color=color, alpha=0.6, linewidth=1)
 
 
-def _render_combined_plot(ax: Axes, df: pd.DataFrame) -> None:
-    """Render the main combined plot with error bars and linking lines."""
-    # Use tools present in data (fallback to default order when equal)
-    present_tools = df['Tool'].unique().tolist()
-    tools_order = [t for t in TOOLS if t in present_tools] + [t for t in present_tools if t not in TOOLS]
-    fuzzers_order = list(df['Fuzzer'].unique().tolist())
-    types_order, offsets, markers, colors = _compute_plot_settings(fuzzers_order)
-    agg = _aggregate_data_for_plot(df)
-    base_positions, xticklabels = _build_positions(tools_order, fuzzers_order)
+def _plot_blocks_and_collect_points(
+    ax: Axes,
+    agg: pd.DataFrame,
+    tools_order: List[str],
+    fuzzers_order: List[str],
+    markers: Dict[str, str],
+    offsets: Dict[str, float],
+    types_order: List[str],
+    colors: Dict[str, Tuple[float, float, float]],
+) -> Dict[str, List[Tuple[float, float]]]:
+    """Plot all tool-fuzzer blocks and collect per-type point coordinates.
 
+    Returns a dict: {Type -> [(x, y), ...]}.
+    """
     idx = -1
-    # Collect per-type points for global linking lines
-    type_points: Dict[str, List[Tuple[float, float]]] = {'Branch': [], 'Line': [], 'Function': []}
+    type_points: Dict[str, List[Tuple[float, float]]] = {t: [] for t in types_order}
     for tool in tools_order:
         for fuz in fuzzers_order:
             idx += 1
@@ -295,7 +340,6 @@ def _render_combined_plot(ax: Axes, df: pd.DataFrame) -> None:
             if block.empty:
                 continue
             _plot_block(ax, idx, block, colors[fuz], markers, offsets, types_order)
-            # Accumulate positions for global lines
             for typ in types_order:
                 row = block[block['Type'] == typ]
                 if row.empty:
@@ -303,35 +347,70 @@ def _render_combined_plot(ax: Axes, df: pd.DataFrame) -> None:
                 x = idx + offsets.get(typ, 0.0)
                 y = float(row['mean'].iloc[0])
                 type_points[typ].append((x, y))
+    return type_points
 
-    ax.set_xticks(list(range(len(base_positions))))
-    ax.set_xticklabels(xticklabels)
-    ax.set_ylabel('Coverage (%)')
-    ax.set_ylim(0, 100)
-    ax.set_title('Combined Coverage (Branch, Line, Function) with 95% CI and Linking Lines')
 
-    # Draw three global lines, one per Type, across all groups
+def _draw_tool_group_headers(ax: Axes, tools_order: List[str], fuzzers_order: List[str]) -> None:
+    """Draw a single tool label above each tool block and separators between blocks."""
+    slots_per_tool = len(fuzzers_order)
+    if slots_per_tool <= 0:
+        return
+    for i, tool in enumerate(tools_order):
+        start = i * slots_per_tool
+        end = start + slots_per_tool - 1
+        center = start + (slots_per_tool - 1) / 2.0
+        ax.text(
+            center,
+            1.02,
+            tool,
+            transform=ax.get_xaxis_transform(),
+            ha='center',
+            va='bottom',
+            fontsize=11,
+            fontweight='bold',
+        )
+        if i < len(tools_order) - 1:
+            ax.axvline(end + 0.5, color='#dddddd', linewidth=1)
+
+
+def _draw_global_type_lines(
+    ax: Axes,
+    types_order: List[str],
+    type_points: Dict[str, List[Tuple[float, float]]],
+) -> None:
+    """Draw three global lines, one per Type, across all groups."""
     type_line_styles = {'Branch': '--', 'Line': '-', 'Function': ':'}
     type_line_colors = {'Branch': '#888888', 'Line': '#000000', 'Function': '#555555'}
     for typ in types_order:
         pts = sorted(type_points[typ], key=lambda p: p[0])
-        if len(pts) >= 2:
-            xs = [p[0] for p in pts]
-            ys = [p[1] for p in pts]
-            ax.plot(
-                xs,
-                ys,
-                linestyle=type_line_styles.get(typ, '-'),
-                color=type_line_colors.get(typ, '#333333'),
-                linewidth=1.2,
-                alpha=0.8,
-            )
+        if len(pts) < 2:
+            continue
+        xs = [p[0] for p in pts]
+        ys = [p[1] for p in pts]
+        ax.plot(
+            xs,
+            ys,
+            linestyle=type_line_styles.get(typ, '-'),
+            color=type_line_colors.get(typ, '#333333'),
+            linewidth=1.2,
+            alpha=0.8,
+        )
 
+
+def _add_legends(
+    ax: Axes,
+    colors: Dict[str, Tuple[float, float, float]],
+    markers: Dict[str, str],
+    types_order: List[str],
+    fuzzers_order: List[str],
+) -> None:
     from matplotlib.lines import Line2D
 
     fuzzer_handles = [
         Line2D([0], [0], color=colors[f], marker='o', linestyle='-', alpha=0.8, label=f) for f in fuzzers_order
     ]
+    type_line_styles = {'Branch': '--', 'Line': '-', 'Function': ':'}
+    type_line_colors = {'Branch': '#888888', 'Line': '#000000', 'Function': '#555555'}
     type_handles = [
         Line2D(
             [0],
@@ -346,6 +425,63 @@ def _render_combined_plot(ax: Axes, df: pd.DataFrame) -> None:
     first = ax.legend(handles=fuzzer_handles, title='Fuzzer', bbox_to_anchor=(1.02, 1), loc='upper left')
     ax.add_artist(first)
     ax.legend(handles=type_handles, title='Type', bbox_to_anchor=(1.02, 0), loc='lower left')
+
+
+def _annotate_average_ci(ax: Axes, agg: pd.DataFrame) -> None:
+    """Annotate the average 95% CI in the top-left corner of the axes."""
+    try:
+        avg_ci = float(agg['ci'].mean()) if not agg.empty else 0.0
+        ax.text(
+            0.01,
+            0.99,
+            f'Avg 95% CI: {avg_ci:.2f}%',
+            transform=ax.transAxes,
+            ha='left',
+            va='top',
+            fontsize=10,
+            bbox={'boxstyle': 'round', 'fc': 'white', 'ec': '#cccccc', 'alpha': 0.8},
+        )
+    except Exception as exc:  # pragma: no cover - defensive; log and continue
+        logging.debug('Failed to annotate average CI: %s', exc)
+
+
+def _render_combined_plot(ax: Axes, df: pd.DataFrame) -> None:
+    """Render the main combined plot with error bars and linking lines."""
+    # Use tools present in data (fallback to default order when equal)
+    present_tools = df['Tool'].unique().tolist()
+    tools_order = [t for t in TOOLS if t in present_tools] + [t for t in present_tools if t not in TOOLS]
+    fuzzers_order = list(df['Fuzzer'].unique().tolist())
+    types_order, offsets, markers, colors = _compute_plot_settings(fuzzers_order)
+    agg = _aggregate_data_for_plot(df)
+    base_positions, xticklabels = _build_positions(tools_order, fuzzers_order)
+    # Plot data blocks and collect points for global type lines
+    type_points = _plot_blocks_and_collect_points(
+        ax,
+        agg,
+        tools_order,
+        fuzzers_order,
+        markers,
+        offsets,
+        types_order,
+        colors,
+    )
+
+    total_slots = len(base_positions)
+    ax.set_xticks(list(range(total_slots)))
+    ax.set_xticklabels(xticklabels, rotation=0)
+    ax.set_ylabel('Coverage (%)')
+    ax.set_ylim(0, 100)
+    ax.set_title('Combined Coverage (Branch, Line, Function) with 95% CI and Linking Lines')
+
+    # Show the average error (mean 95% CI) across all points in a corner
+    _annotate_average_ci(ax, agg)
+
+    # Draw group headers for tools (only once) and separators between tool blocks
+    _draw_tool_group_headers(ax, tools_order, fuzzers_order)
+
+    # Draw three global lines, one per Type, across all groups
+    _draw_global_type_lines(ax, types_order, type_points)
+    _add_legends(ax, colors, markers, types_order, fuzzers_order)
 
 
 def plot_coverage(df: pd.DataFrame) -> None:
@@ -364,9 +500,9 @@ def plot_coverage(df: pd.DataFrame) -> None:
 
 
 def main() -> None:
-    """Main function to collect and plot data using fastcov_summary over JSON outputs."""
-    # Prefer JSON outputs produced by the runner in testFiles/
-    df = collect_data_from_fastcov(['testFiles'])  # add more directories if needed
+    """Collect and plot coverage from experiment_* folders using fastcov_summary."""
+    # Search both project root and testFiles/ for experiment_* coverage JSONs
+    df = collect_data_from_fastcov(['.'])  # add/adjust directories if needed
     if df.empty:
         logging.info('No coverage data found from fastcov JSONs. Nothing to plot.')
         return
