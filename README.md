@@ -55,3 +55,10 @@ The Makefile provides numerous commands for managing the workflow. Use `make hel
 ## Acknowledgments
 
 Thank you Frank for the initial project code.
+
+## valids
+
+- valid : openai o3 slang validation on slang from transfuzz slang coverage `uv run gen_seed.py --target file --fastcov-json testFiles/coverage-slang.json --threshold 60--min-threshold 5 --model openai --max-retries 4 --output-dir valid/`
+- valid2: openai o3 slang validation on verilator from verismith coverage `uv run gen_seed.py --target file --fastcov-json coverage.json --threshold 60 --min-threshold 5 --model openai --max-retries 4 --output-dir valid2/ &> valid2.log`
+- valid3: openai o3 verilator validation on verilator from transfuzz verilator coverage `uv run gen_seed.py --fastcov-json tf-coverage.json --threshold 71.3 --model openai --max-retries 4 --output-dir valid3 &>gen_snippets-o3-valid3-vtor.log`
+- valid4: gemini flash 2.5 preview on verilator, verilator transfuzz coverage `uv run gen_seed.py --fastcov-json tf-coverage.json --threshold 71.3 --model gemini --max-retries 4 --output-dir valid4 &>gen_snippets-gemini-valid4.log &`
