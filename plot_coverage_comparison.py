@@ -21,7 +21,8 @@ FUZZERS = {
     # 'VlogHammer': 'testFiles/vloghammer' # Add when available
 }
 TOOLS = ['Verilator', 'Slang', 'Yosys']  # Default display order; actual tools used are inferred from data
-NUM_FILES = 50
+
+ZERO_TO_100 = False
 
 
 def get_test_files(fuzzer_path: str, num_files: int) -> List[str]:
@@ -470,7 +471,26 @@ def _render_combined_plot(ax: Axes, df: pd.DataFrame) -> None:
     ax.set_xticks(list(range(total_slots)))
     ax.set_xticklabels(xticklabels, rotation=0)
     ax.set_ylabel('Coverage (%)')
-    ax.set_ylim(0, 100)
+    if ZERO_TO_100:
+        ax.set_ylim(0, 100)
+    else:
+        # Dynamic y-limits based on mean ± CI across all groups
+        try:
+            y_mean = agg['mean'] if 'mean' in agg.columns else pd.Series(dtype=float)
+            y_ci = agg['ci'] if 'ci' in agg.columns else pd.Series(dtype=float)
+            if not y_mean.empty:
+                y_lo = float((y_mean - y_ci.fillna(0.0)).min())
+                y_hi = float((y_mean + y_ci.fillna(0.0)).max())
+                rng = max(1e-6, y_hi - y_lo)
+                pad = max(0.5, 0.05 * rng)
+                ymin = y_lo - pad
+                ymax = y_hi + pad
+                if ymin == ymax:
+                    ymin -= 1.0
+                    ymax += 1.0
+                ax.set_ylim(ymin, ymax)
+        except Exception as e:  # pragma: no cover - fallback silently to Matplotlib autoscale
+            logging.debug('Failed to compute dynamic y-limits: %s', e)
     ax.set_title('Combined Coverage (Branch, Line, Function) with 95% CI and Linking Lines')
 
     # Show the average error (mean 95% CI) across all points in a corner

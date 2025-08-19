@@ -24,6 +24,9 @@ def calculate_confidence_interval(file_path: str, confidence_level: float = 0.95
         # Calculate the sample mean
         mean = np.mean(data)
 
+        # Calculate the sample standard deviation
+        std_dev = np.std(data, ddof=1)
+
         # Calculate the standard error of the mean (SEM)
         sem = stats.sem(data)
 
@@ -35,6 +38,7 @@ def calculate_confidence_interval(file_path: str, confidence_level: float = 0.95
         print('-' * 50)
         print(f'Number of observations (n): {n}')
         print(f'Sample Mean: {mean:.4f}')
+        print(f'Standard Deviation (Écart type): {std_dev:.4f}')
         print(f'Standard Error of the Mean (SEM): {sem:.4f}')
         print(f'Confidence Interval: ({confidence_interval[0]:.4f}, {confidence_interval[1]:.4f})')
         print('-' * 50)
