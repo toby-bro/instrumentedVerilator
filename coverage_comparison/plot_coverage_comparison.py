@@ -8,7 +8,6 @@ from typing import Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
 from matplotlib.axes import Axes
 
 # Configure logging
@@ -258,14 +257,15 @@ def _compute_plot_settings(fuzzers_order: List[str]) -> Tuple[
     List[str],
     Dict[str, float],
     Dict[str, str],
-    Dict[str, Tuple[float, float, float]],
+    Dict[str, Tuple[float, ...]],
 ]:
     """Return static settings and color mapping per fuzzer."""
     types_order = ['Branch', 'Line', 'Function']
     offsets = {'Branch': -0.2, 'Line': 0.0, 'Function': 0.2}
-    markers = {'Branch': 's', 'Line': 'o', 'Function': 'D'}
-    palette = sns.color_palette(n_colors=len(fuzzers_order))
-    colors = {f: palette[i] for i, f in enumerate(fuzzers_order)}
+    markers = {'Branch': 's', 'Line': 'o', 'Function': '^'}  # Changed Function from 'D' to '^' (triangle up)
+    # Use Matplotlib categorical palette instead of seaborn
+    cmap = plt.get_cmap('tab10')
+    colors = {f: tuple(cmap(i % cmap.N)[:3]) for i, f in enumerate(fuzzers_order)}
     return types_order, offsets, markers, colors
 
 
@@ -284,7 +284,7 @@ def _plot_block(
     ax: Axes,
     idx: int,
     block: pd.DataFrame,
-    color: Tuple[float, float, float],
+    color: Tuple[float, ...],
     markers: Dict[str, str],
     offsets: Dict[str, float],
     types_order: List[str],
@@ -304,8 +304,10 @@ def _plot_block(
             yerr=ci,
             fmt=markers.get(typ, 'o'),
             color=color,
-            capsize=3,
-            markersize=6,
+            capsize=20,  # Much larger error bar caps (4x)
+            markersize=30,  # Much larger markers (4x)
+            linewidth=10,  # Much thicker error bar lines (4x)
+            markeredgewidth=6,  # Much thicker marker edges (4x)
             linestyle='None',
             alpha=0.9,
         )
@@ -315,7 +317,7 @@ def _plot_block(
         order = sorted(range(len(line_x)), key=lambda i: line_x[i])
         sx = [line_x[i] for i in order]
         sy = [line_y[i] for i in order]
-        ax.plot(sx, sy, color=color, alpha=0.6, linewidth=1)
+        ax.plot(sx, sy, color=color, alpha=0.6, linewidth=10)  # Much thicker connecting lines (4x)
 
 
 def _plot_blocks_and_collect_points(
@@ -326,7 +328,7 @@ def _plot_blocks_and_collect_points(
     markers: Dict[str, str],
     offsets: Dict[str, float],
     types_order: List[str],
-    colors: Dict[str, Tuple[float, float, float]],
+    colors: Dict[str, Tuple[float, ...]],
 ) -> Dict[str, List[Tuple[float, float]]]:
     """Plot all tool-fuzzer blocks and collect per-type point coordinates.
 
@@ -367,11 +369,11 @@ def _draw_tool_group_headers(ax: Axes, tools_order: List[str], fuzzers_order: Li
             transform=ax.get_xaxis_transform(),
             ha='center',
             va='bottom',
-            fontsize=11,
+            fontsize=40,  # Much larger font for tool headers (4x)
             fontweight='bold',
         )
         if i < len(tools_order) - 1:
-            ax.axvline(end + 0.5, color='#dddddd', linewidth=1)
+            ax.axvline(end + 0.5, color='#dddddd', linewidth=8)  # Much thicker separators (4x)
 
 
 def _draw_global_type_lines(
@@ -393,14 +395,14 @@ def _draw_global_type_lines(
             ys,
             linestyle=type_line_styles.get(typ, '-'),
             color=type_line_colors.get(typ, '#333333'),
-            linewidth=1.2,
+            linewidth=10,  # Much thicker global lines (4x)
             alpha=0.8,
         )
 
 
 def _add_legends(
     ax: Axes,
-    colors: Dict[str, Tuple[float, float, float]],
+    colors: Dict[str, Tuple[float, ...]],
     markers: Dict[str, str],
     types_order: List[str],
     fuzzers_order: List[str],
@@ -408,7 +410,18 @@ def _add_legends(
     from matplotlib.lines import Line2D
 
     fuzzer_handles = [
-        Line2D([0], [0], color=colors[f], marker='o', linestyle='-', alpha=0.8, label=f) for f in fuzzers_order
+        Line2D(
+            [0],
+            [0],
+            color=colors[f],
+            marker='o',
+            linestyle='-',
+            alpha=0.8,
+            label=f,
+            linewidth=7,
+            markersize=20,
+        )  # 4x larger
+        for f in fuzzers_order
     ]
     type_line_styles = {'Branch': '--', 'Line': '-', 'Function': ':'}
     type_line_colors = {'Branch': '#888888', 'Line': '#000000', 'Function': '#555555'}
@@ -420,6 +433,8 @@ def _add_legends(
             marker=markers[t],
             linestyle=type_line_styles.get(t, '-'),
             label=t,
+            linewidth=7,  # Much thicker legend lines (4x)
+            markersize=20,  # Much larger legend markers (4x)
         )
         for t in types_order
     ]
@@ -433,13 +448,13 @@ def _annotate_average_ci(ax: Axes, agg: pd.DataFrame) -> None:
     try:
         avg_ci = float(agg['ci'].mean()) if not agg.empty else 0.0
         ax.text(
-            0.01,
+            0.99,
             0.99,
             f'Avg 95% CI: {avg_ci:.2f}%',
             transform=ax.transAxes,
-            ha='left',
+            ha='right',
             va='top',
-            fontsize=10,
+            # fontsize=40,  # Much larger annotation font (4x)
             bbox={'boxstyle': 'round', 'fc': 'white', 'ec': '#cccccc', 'alpha': 0.8},
         )
     except Exception as exc:  # pragma: no cover - defensive; log and continue
@@ -467,10 +482,15 @@ def _render_combined_plot(ax: Axes, df: pd.DataFrame) -> None:
         colors,
     )
 
-    total_slots = len(base_positions)
-    ax.set_xticks(list(range(total_slots)))
-    ax.set_xticklabels(xticklabels, rotation=0)
+    # total_slots = len(base_positions)
+    # Comment out axis ticks and labels to remove them
+    # ax.set_xticks(list(range(total_slots)))
+    # ax.set_xticklabels(xticklabels, rotation=0)
     ax.set_ylabel('Coverage (%)')
+
+    # Remove all x-axis ticks
+    ax.set_xticks([])
+
     if ZERO_TO_100:
         ax.set_ylim(0, 100)
     else:
@@ -491,7 +511,7 @@ def _render_combined_plot(ax: Axes, df: pd.DataFrame) -> None:
                 ax.set_ylim(ymin, ymax)
         except Exception as e:  # pragma: no cover - fallback silently to Matplotlib autoscale
             logging.debug('Failed to compute dynamic y-limits: %s', e)
-    ax.set_title('Combined Coverage (Branch, Line, Function) with 95% CI and Linking Lines')
+    # ax.set_title('Combined Coverage (Branch, Line, Function) with 95% CI and Linking Lines')
 
     # Show the average error (mean 95% CI) across all points in a corner
     _annotate_average_ci(ax, agg)
@@ -509,12 +529,32 @@ def plot_coverage(df: pd.DataFrame) -> None:
     if df.empty:
         logging.info('DataFrame is empty, nothing to plot.')
         return
-    sns.set_theme(style='whitegrid')
-    fig, ax = plt.subplots(figsize=(14, 9))
+
+    # Configure for publication - much larger text and elements for 5cm width
+    plt.rcParams.update(
+        {
+            'font.size': 35,  # Base font size (4x larger)
+            'axes.titlesize': 45,  # Title font size (4x larger)
+            'axes.labelsize': 35,  # Axis label font size (4x larger)
+            'xtick.labelsize': 30,  # X-tick label font size (4x larger)
+            'ytick.labelsize': 30,  # Y-tick label font size (4x larger)
+            'legend.fontsize': 30,  # Legend font size (4x larger)
+            'legend.title_fontsize': 30,  # Legend title font size (4x larger)
+            'lines.linewidth': 12,  # Much thicker lines (4x)
+            'lines.markersize': 30,  # Much larger markers (4x)
+        },
+    )
+
+    fig, ax = plt.subplots(figsize=(16, 10))  # Keep same figure size
+
+    # Add subtle horizontal grid lines for y-axis
+    ax.grid(True, axis='y', alpha=0.3, linewidth=0.5, linestyle='-', color='gray')
+    ax.set_axisbelow(True)  # Put grid lines behind the data
+
     _render_combined_plot(ax, df)
     plt.tight_layout()
     out_file = 'combined_coverage_comparison.png'
-    plt.savefig(out_file, bbox_inches='tight')
+    plt.savefig(out_file, bbox_inches='tight', dpi=300)  # High DPI for print quality
     logging.info(f'Saved plot to {out_file}')
     plt.show()
 

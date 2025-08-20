@@ -24,9 +24,7 @@ def plot_scores(file_path: str) -> None:
 
         # Axes setup
         plt.xlim(0, 1)
-        plt.ylim(0, 1)
         plt.xticks(bins)
-        plt.yticks(bins)
         plt.xlabel('Score')
         plt.ylabel('Proportion')
         plt.title('Distribution of Scores')
@@ -34,6 +32,7 @@ def plot_scores(file_path: str) -> None:
 
         # Save
         plt.tight_layout()
+        plt.show()
         plt.savefig('scores_histogram.png')
         print('Histogram saved to scores_histogram.png')
 
