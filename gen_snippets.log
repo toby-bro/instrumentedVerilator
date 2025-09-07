@@ -1,0 +1,306 @@
+INFO - HTTP Request: GET https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json "HTTP/1.1 200 OK"
+2025-08-13 08:49:08,479 - __main__ - INFO - Ensured output directory exists: valid4
+2025-08-13 08:49:08,479 - snippetGen.llm_handler - INFO - Using model via LiteLLM: gemini/gemini-2.5-flash-preview-05-20
+2025-08-13 08:49:08,520 - __main__ - INFO - Analyzing coverage from tf-coverage.json with threshold 71.3%...
+2025-08-13 08:49:08,559 - __main__ - INFO - Found 98 C++ files below 71.30% coverage. Attempting to generate Verilog snippets...
+2025-08-13 08:49:08,560 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3OrderParallel.cpp (Coverage: 0.00%) ---
+2025-08-13 08:49:08,560 - __main__ - ERROR - Target C++ file 'verilator/src/V3OrderParallel.cpp' (derived from report path '/verilator/src/V3OrderParallel.cpp') not found. Skipping.
+2025-08-13 08:49:08,560 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3InstrCount.cpp (Coverage: 0.00%) ---
+2025-08-13 08:49:08,560 - __main__ - ERROR - Target C++ file 'verilator/src/V3InstrCount.cpp' (derived from report path '/verilator/src/V3InstrCount.cpp') not found. Skipping.
+2025-08-13 08:49:08,560 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Sampled.cpp (Coverage: 0.00%) ---
+2025-08-13 08:49:08,560 - __main__ - ERROR - Target C++ file 'verilator/src/V3Sampled.cpp' (derived from report path '/verilator/src/V3Sampled.cpp') not found. Skipping.
+2025-08-13 08:49:08,560 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Randomize.cpp (Coverage: 0.00%) ---
+2025-08-13 08:49:08,560 - __main__ - ERROR - Target C++ file 'verilator/src/V3Randomize.cpp' (derived from report path '/verilator/src/V3Randomize.cpp') not found. Skipping.
+2025-08-13 08:49:08,560 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Udp.cpp (Coverage: 0.00%) ---
+2025-08-13 08:49:08,560 - __main__ - ERROR - Target C++ file 'verilator/src/V3Udp.cpp' (derived from report path '/verilator/src/V3Udp.cpp') not found. Skipping.
+2025-08-13 08:49:08,560 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3DepthBlock.cpp (Coverage: 0.00%) ---
+2025-08-13 08:49:08,560 - __main__ - ERROR - Target C++ file 'verilator/src/V3DepthBlock.cpp' (derived from report path '/verilator/src/V3DepthBlock.cpp') not found. Skipping.
+2025-08-13 08:49:08,560 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3EmitMkJson.cpp (Coverage: 0.00%) ---
+2025-08-13 08:49:08,560 - __main__ - ERROR - Target C++ file 'verilator/src/V3EmitMkJson.cpp' (derived from report path '/verilator/src/V3EmitMkJson.cpp') not found. Skipping.
+2025-08-13 08:49:08,560 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Force.cpp (Coverage: 2.47%) ---
+2025-08-13 08:49:08,560 - __main__ - ERROR - Target C++ file 'verilator/src/V3Force.cpp' (derived from report path '/verilator/src/V3Force.cpp') not found. Skipping.
+2025-08-13 08:49:08,560 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3SchedVirtIface.cpp (Coverage: 4.81%) ---
+2025-08-13 08:49:08,560 - __main__ - ERROR - Target C++ file 'verilator/src/V3SchedVirtIface.cpp' (derived from report path '/verilator/src/V3SchedVirtIface.cpp') not found. Skipping.
+2025-08-13 08:49:08,560 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3SchedTiming.cpp (Coverage: 7.53%) ---
+2025-08-13 08:49:08,560 - __main__ - ERROR - Target C++ file 'verilator/src/V3SchedTiming.cpp' (derived from report path '/verilator/src/V3SchedTiming.cpp') not found. Skipping.
+2025-08-13 08:49:08,560 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Timing.cpp (Coverage: 7.91%) ---
+2025-08-13 08:49:08,560 - __main__ - ERROR - Target C++ file 'verilator/src/V3Timing.cpp' (derived from report path '/verilator/src/V3Timing.cpp') not found. Skipping.
+2025-08-13 08:49:08,561 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Case.cpp (Coverage: 7.98%) ---
+2025-08-13 08:49:08,561 - __main__ - ERROR - Target C++ file 'verilator/src/V3Case.cpp' (derived from report path '/verilator/src/V3Case.cpp') not found. Skipping.
+2025-08-13 08:49:08,561 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Task.cpp (Coverage: 8.29%) ---
+2025-08-13 08:49:08,561 - __main__ - ERROR - Target C++ file 'verilator/src/V3Task.cpp' (derived from report path '/verilator/src/V3Task.cpp') not found. Skipping.
+2025-08-13 08:49:08,561 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Common.cpp (Coverage: 9.86%) ---
+2025-08-13 08:49:08,561 - __main__ - ERROR - Target C++ file 'verilator/src/V3Common.cpp' (derived from report path '/verilator/src/V3Common.cpp') not found. Skipping.
+2025-08-13 08:49:08,561 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Param.cpp (Coverage: 11.15%) ---
+2025-08-13 08:49:08,561 - __main__ - ERROR - Target C++ file 'verilator/src/V3Param.cpp' (derived from report path '/verilator/src/V3Param.cpp') not found. Skipping.
+2025-08-13 08:49:08,561 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3LinkJump.cpp (Coverage: 11.43%) ---
+2025-08-13 08:49:08,561 - __main__ - ERROR - Target C++ file 'verilator/src/V3LinkJump.cpp' (derived from report path '/verilator/src/V3LinkJump.cpp') not found. Skipping.
+2025-08-13 08:49:08,561 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Width.cpp (Coverage: 12.43%) ---
+2025-08-13 08:49:08,561 - __main__ - ERROR - Target C++ file 'verilator/src/V3Width.cpp' (derived from report path '/verilator/src/V3Width.cpp') not found. Skipping.
+2025-08-13 08:49:08,561 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3AstNodes.cpp (Coverage: 12.86%) ---
+2025-08-13 08:49:08,561 - __main__ - ERROR - Target C++ file 'verilator/src/V3AstNodes.cpp' (derived from report path '/verilator/src/V3AstNodes.cpp') not found. Skipping.
+2025-08-13 08:49:08,561 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Assert.cpp (Coverage: 13.10%) ---
+2025-08-13 08:49:08,561 - __main__ - ERROR - Target C++ file 'verilator/src/V3Assert.cpp' (derived from report path '/verilator/src/V3Assert.cpp') not found. Skipping.
+2025-08-13 08:49:08,561 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Unroll.cpp (Coverage: 15.35%) ---
+2025-08-13 08:49:08,561 - __main__ - ERROR - Target C++ file 'verilator/src/V3Unroll.cpp' (derived from report path '/verilator/src/V3Unroll.cpp') not found. Skipping.
+2025-08-13 08:49:08,561 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3AssertPre.cpp (Coverage: 15.95%) ---
+2025-08-13 08:49:08,561 - __main__ - ERROR - Target C++ file 'verilator/src/V3AssertPre.cpp' (derived from report path '/verilator/src/V3AssertPre.cpp') not found. Skipping.
+2025-08-13 08:49:08,561 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3LinkResolve.cpp (Coverage: 16.09%) ---
+2025-08-13 08:49:08,561 - __main__ - ERROR - Target C++ file 'verilator/src/V3LinkResolve.cpp' (derived from report path '/verilator/src/V3LinkResolve.cpp') not found. Skipping.
+2025-08-13 08:49:08,561 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Begin.cpp (Coverage: 17.94%) ---
+2025-08-13 08:49:08,561 - __main__ - ERROR - Target C++ file 'verilator/src/V3Begin.cpp' (derived from report path '/verilator/src/V3Begin.cpp') not found. Skipping.
+2025-08-13 08:49:08,561 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3LinkLValue.cpp (Coverage: 18.14%) ---
+2025-08-13 08:49:08,561 - __main__ - ERROR - Target C++ file 'verilator/src/V3LinkLValue.cpp' (derived from report path '/verilator/src/V3LinkLValue.cpp') not found. Skipping.
+2025-08-13 08:49:08,562 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3String.cpp (Coverage: 18.43%) ---
+2025-08-13 08:49:08,562 - __main__ - ERROR - Target C++ file 'verilator/src/V3String.cpp' (derived from report path '/verilator/src/V3String.cpp') not found. Skipping.
+2025-08-13 08:49:08,562 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Slice.cpp (Coverage: 19.05%) ---
+2025-08-13 08:49:08,562 - __main__ - ERROR - Target C++ file 'verilator/src/V3Slice.cpp' (derived from report path '/verilator/src/V3Slice.cpp') not found. Skipping.
+2025-08-13 08:49:08,562 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Config.cpp (Coverage: 19.33%) ---
+2025-08-13 08:49:08,562 - __main__ - ERROR - Target C++ file 'verilator/src/V3Config.cpp' (derived from report path '/verilator/src/V3Config.cpp') not found. Skipping.
+2025-08-13 08:49:08,562 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Inst.cpp (Coverage: 19.79%) ---
+2025-08-13 08:49:08,562 - __main__ - ERROR - Target C++ file 'verilator/src/V3Inst.cpp' (derived from report path '/verilator/src/V3Inst.cpp') not found. Skipping.
+2025-08-13 08:49:08,562 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3LinkInc.cpp (Coverage: 21.05%) ---
+2025-08-13 08:49:08,562 - __main__ - ERROR - Target C++ file 'verilator/src/V3LinkInc.cpp' (derived from report path '/verilator/src/V3LinkInc.cpp') not found. Skipping.
+2025-08-13 08:49:08,562 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3LinkParse.cpp (Coverage: 21.73%) ---
+2025-08-13 08:49:08,562 - __main__ - ERROR - Target C++ file 'verilator/src/V3LinkParse.cpp' (derived from report path '/verilator/src/V3LinkParse.cpp') not found. Skipping.
+2025-08-13 08:49:08,562 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3LinkDot.cpp (Coverage: 22.51%) ---
+2025-08-13 08:49:08,562 - __main__ - ERROR - Target C++ file 'verilator/src/V3LinkDot.cpp' (derived from report path '/verilator/src/V3LinkDot.cpp') not found. Skipping.
+2025-08-13 08:49:08,562 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Fork.cpp (Coverage: 23.66%) ---
+2025-08-13 08:49:08,562 - __main__ - ERROR - Target C++ file 'verilator/src/V3Fork.cpp' (derived from report path '/verilator/src/V3Fork.cpp') not found. Skipping.
+2025-08-13 08:49:08,562 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Number.cpp (Coverage: 25.56%) ---
+2025-08-13 08:49:08,562 - __main__ - ERROR - Target C++ file 'verilator/src/V3Number.cpp' (derived from report path '/verilator/src/V3Number.cpp') not found. Skipping.
+2025-08-13 08:49:08,562 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3StatsReport.cpp (Coverage: 25.95%) ---
+2025-08-13 08:49:08,562 - __main__ - ERROR - Target C++ file 'verilator/src/V3StatsReport.cpp' (derived from report path '/verilator/src/V3StatsReport.cpp') not found. Skipping.
+2025-08-13 08:49:08,562 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3WidthSel.cpp (Coverage: 26.29%) ---
+2025-08-13 08:49:08,562 - __main__ - ERROR - Target C++ file 'verilator/src/V3WidthSel.cpp' (derived from report path '/verilator/src/V3WidthSel.cpp') not found. Skipping.
+2025-08-13 08:49:08,562 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Hasher.cpp (Coverage: 26.39%) ---
+2025-08-13 08:49:08,562 - __main__ - ERROR - Target C++ file 'verilator/src/V3Hasher.cpp' (derived from report path '/verilator/src/V3Hasher.cpp') not found. Skipping.
+2025-08-13 08:49:08,562 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3EmitCFunc.cpp (Coverage: 26.59%) ---
+2025-08-13 08:49:08,562 - __main__ - ERROR - Target C++ file 'verilator/src/V3EmitCFunc.cpp' (derived from report path '/verilator/src/V3EmitCFunc.cpp') not found. Skipping.
+2025-08-13 08:49:08,563 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3ThreadPool.cpp (Coverage: 27.50%) ---
+2025-08-13 08:49:08,563 - __main__ - ERROR - Target C++ file 'verilator/src/V3ThreadPool.cpp' (derived from report path '/verilator/src/V3ThreadPool.cpp') not found. Skipping.
+2025-08-13 08:49:08,563 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Class.cpp (Coverage: 27.78%) ---
+2025-08-13 08:49:08,563 - __main__ - ERROR - Target C++ file 'verilator/src/V3Class.cpp' (derived from report path '/verilator/src/V3Class.cpp') not found. Skipping.
+2025-08-13 08:49:08,563 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Tristate.cpp (Coverage: 29.83%) ---
+2025-08-13 08:49:08,563 - __main__ - ERROR - Target C++ file 'verilator/src/V3Tristate.cpp' (derived from report path '/verilator/src/V3Tristate.cpp') not found. Skipping.
+2025-08-13 08:49:08,563 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Graph.cpp (Coverage: 30.27%) ---
+2025-08-13 08:49:08,563 - __main__ - ERROR - Target C++ file 'verilator/src/V3Graph.cpp' (derived from report path '/verilator/src/V3Graph.cpp') not found. Skipping.
+2025-08-13 08:49:08,563 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3EmitCImp.cpp (Coverage: 30.91%) ---
+2025-08-13 08:49:08,563 - __main__ - ERROR - Target C++ file 'verilator/src/V3EmitCImp.cpp' (derived from report path '/verilator/src/V3EmitCImp.cpp') not found. Skipping.
+2025-08-13 08:49:08,563 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3EmitMk.cpp (Coverage: 31.42%) ---
+2025-08-13 08:49:08,563 - __main__ - ERROR - Target C++ file 'verilator/src/V3EmitMk.cpp' (derived from report path '/verilator/src/V3EmitMk.cpp') not found. Skipping.
+2025-08-13 08:49:08,563 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3EmitCInlines.cpp (Coverage: 31.82%) ---
+2025-08-13 08:49:08,563 - __main__ - ERROR - Target C++ file 'verilator/src/V3EmitCInlines.cpp' (derived from report path '/verilator/src/V3EmitCInlines.cpp') not found. Skipping.
+2025-08-13 08:49:08,563 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3EmitCConstPool.cpp (Coverage: 31.91%) ---
+2025-08-13 08:49:08,563 - __main__ - ERROR - Target C++ file 'verilator/src/V3EmitCConstPool.cpp' (derived from report path '/verilator/src/V3EmitCConstPool.cpp') not found. Skipping.
+2025-08-13 08:49:08,563 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3DupFinder.cpp (Coverage: 32.43%) ---
+2025-08-13 08:49:08,563 - __main__ - ERROR - Target C++ file 'verilator/src/V3DupFinder.cpp' (derived from report path '/verilator/src/V3DupFinder.cpp') not found. Skipping.
+2025-08-13 08:49:08,563 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Delayed.cpp (Coverage: 32.49%) ---
+2025-08-13 08:49:08,563 - __main__ - ERROR - Target C++ file 'verilator/src/V3Delayed.cpp' (derived from report path '/verilator/src/V3Delayed.cpp') not found. Skipping.
+2025-08-13 08:49:08,563 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Unknown.cpp (Coverage: 33.19%) ---
+2025-08-13 08:49:08,563 - __main__ - ERROR - Target C++ file 'verilator/src/V3Unknown.cpp' (derived from report path '/verilator/src/V3Unknown.cpp') not found. Skipping.
+2025-08-13 08:49:08,563 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3EmitCSyms.cpp (Coverage: 33.49%) ---
+2025-08-13 08:49:08,563 - __main__ - ERROR - Target C++ file 'verilator/src/V3EmitCSyms.cpp' (derived from report path '/verilator/src/V3EmitCSyms.cpp') not found. Skipping.
+2025-08-13 08:49:08,563 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3SplitAs.cpp (Coverage: 34.33%) ---
+2025-08-13 08:49:08,563 - __main__ - ERROR - Target C++ file 'verilator/src/V3SplitAs.cpp' (derived from report path '/verilator/src/V3SplitAs.cpp') not found. Skipping.
+2025-08-13 08:49:08,564 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3LinkCells.cpp (Coverage: 37.99%) ---
+2025-08-13 08:49:08,564 - __main__ - ERROR - Target C++ file 'verilator/src/V3LinkCells.cpp' (derived from report path '/verilator/src/V3LinkCells.cpp') not found. Skipping.
+2025-08-13 08:49:08,564 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3EmitCHeaders.cpp (Coverage: 38.04%) ---
+2025-08-13 08:49:08,564 - __main__ - ERROR - Target C++ file 'verilator/src/V3EmitCHeaders.cpp' (derived from report path '/verilator/src/V3EmitCHeaders.cpp') not found. Skipping.
+2025-08-13 08:49:08,564 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Dfg.cpp (Coverage: 40.36%) ---
+2025-08-13 08:49:08,564 - __main__ - ERROR - Target C++ file 'verilator/src/V3Dfg.cpp' (derived from report path '/verilator/src/V3Dfg.cpp') not found. Skipping.
+2025-08-13 08:49:08,564 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3WidthCommit.cpp (Coverage: 41.01%) ---
+2025-08-13 08:49:08,564 - __main__ - ERROR - Target C++ file 'verilator/src/V3WidthCommit.cpp' (derived from report path '/verilator/src/V3WidthCommit.cpp') not found. Skipping.
+2025-08-13 08:49:08,564 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3VariableOrder.cpp (Coverage: 42.98%) ---
+2025-08-13 08:49:08,564 - __main__ - ERROR - Target C++ file 'verilator/src/V3VariableOrder.cpp' (derived from report path '/verilator/src/V3VariableOrder.cpp') not found. Skipping.
+2025-08-13 08:49:08,564 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3PreProc.cpp (Coverage: 43.57%) ---
+2025-08-13 08:49:08,564 - __main__ - ERROR - Target C++ file 'verilator/src/V3PreProc.cpp' (derived from report path '/verilator/src/V3PreProc.cpp') not found. Skipping.
+2025-08-13 08:49:08,564 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Table.cpp (Coverage: 43.83%) ---
+2025-08-13 08:49:08,564 - __main__ - ERROR - Target C++ file 'verilator/src/V3Table.cpp' (derived from report path '/verilator/src/V3Table.cpp') not found. Skipping.
+2025-08-13 08:49:08,564 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3SplitVar.cpp (Coverage: 44.96%) ---
+2025-08-13 08:49:08,564 - __main__ - ERROR - Target C++ file 'verilator/src/V3SplitVar.cpp' (derived from report path '/verilator/src/V3SplitVar.cpp') not found. Skipping.
+2025-08-13 08:49:08,564 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Options.cpp (Coverage: 45.50%) ---
+2025-08-13 08:49:08,564 - __main__ - ERROR - Target C++ file 'verilator/src/V3Options.cpp' (derived from report path '/verilator/src/V3Options.cpp') not found. Skipping.
+2025-08-13 08:49:08,564 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Name.cpp (Coverage: 46.43%) ---
+2025-08-13 08:49:08,564 - __main__ - ERROR - Target C++ file 'verilator/src/V3Name.cpp' (derived from report path '/verilator/src/V3Name.cpp') not found. Skipping.
+2025-08-13 08:49:08,564 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/obj_opt/V3Const__gen.cpp (Coverage: 47.84%) ---
+2025-08-13 08:49:08,564 - __main__ - ERROR - Target C++ file 'verilator/src/obj_opt/V3Const__gen.cpp' (derived from report path '/verilator/src/obj_opt/V3Const__gen.cpp') not found. Skipping.
+2025-08-13 08:49:08,564 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/obj_opt/V3Lexer_pregen.yy.cpp (Coverage: 47.89%) ---
+2025-08-13 08:49:08,564 - __main__ - ERROR - Target C++ file 'verilator/src/obj_opt/V3Lexer_pregen.yy.cpp' (derived from report path '/verilator/src/obj_opt/V3Lexer_pregen.yy.cpp') not found. Skipping.
+2025-08-13 08:49:08,564 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Depth.cpp (Coverage: 48.61%) ---
+2025-08-13 08:49:08,564 - __main__ - ERROR - Target C++ file 'verilator/src/V3Depth.cpp' (derived from report path '/verilator/src/V3Depth.cpp') not found. Skipping.
+2025-08-13 08:49:08,564 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3ParseGrammar.cpp (Coverage: 48.82%) ---
+2025-08-13 08:49:08,565 - __main__ - ERROR - Target C++ file 'verilator/src/V3ParseGrammar.cpp' (derived from report path '/verilator/src/V3ParseGrammar.cpp') not found. Skipping.
+2025-08-13 08:49:08,565 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Scope.cpp (Coverage: 50.00%) ---
+2025-08-13 08:49:08,565 - __main__ - ERROR - Target C++ file 'verilator/src/V3Scope.cpp' (derived from report path '/verilator/src/V3Scope.cpp') not found. Skipping.
+2025-08-13 08:49:08,565 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3GraphPathChecker.cpp (Coverage: 50.00%) ---
+2025-08-13 08:49:08,565 - __main__ - ERROR - Target C++ file 'verilator/src/V3GraphPathChecker.cpp' (derived from report path '/verilator/src/V3GraphPathChecker.cpp') not found. Skipping.
+2025-08-13 08:49:08,565 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/obj_opt/V3PreLex_pregen.yy.cpp (Coverage: 50.77%) ---
+2025-08-13 08:49:08,565 - __main__ - ERROR - Target C++ file 'verilator/src/obj_opt/V3PreLex_pregen.yy.cpp' (derived from report path '/verilator/src/obj_opt/V3PreLex_pregen.yy.cpp') not found. Skipping.
+2025-08-13 08:49:08,565 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3LinkLevel.cpp (Coverage: 52.80%) ---
+2025-08-13 08:49:08,565 - __main__ - ERROR - Target C++ file 'verilator/src/V3LinkLevel.cpp' (derived from report path '/verilator/src/V3LinkLevel.cpp') not found. Skipping.
+2025-08-13 08:49:08,565 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3File.cpp (Coverage: 53.82%) ---
+2025-08-13 08:49:08,565 - __main__ - ERROR - Target C++ file 'verilator/src/V3File.cpp' (derived from report path '/verilator/src/V3File.cpp') not found. Skipping.
+2025-08-13 08:49:08,565 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3ParseImp.cpp (Coverage: 54.42%) ---
+2025-08-13 08:49:08,565 - __main__ - ERROR - Target C++ file 'verilator/src/V3ParseImp.cpp' (derived from report path '/verilator/src/V3ParseImp.cpp') not found. Skipping.
+2025-08-13 08:49:08,565 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3FileLine.cpp (Coverage: 54.85%) ---
+2025-08-13 08:49:08,565 - __main__ - ERROR - Target C++ file 'verilator/src/V3FileLine.cpp' (derived from report path '/verilator/src/V3FileLine.cpp') not found. Skipping.
+2025-08-13 08:49:08,565 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Ast.cpp (Coverage: 56.26%) ---
+2025-08-13 08:49:08,565 - __main__ - ERROR - Target C++ file 'verilator/src/V3Ast.cpp' (derived from report path '/verilator/src/V3Ast.cpp') not found. Skipping.
+2025-08-13 08:49:08,565 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Inline.cpp (Coverage: 56.39%) ---
+2025-08-13 08:49:08,565 - __main__ - ERROR - Target C++ file 'verilator/src/V3Inline.cpp' (derived from report path '/verilator/src/V3Inline.cpp') not found. Skipping.
+2025-08-13 08:49:08,565 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3DfgPeephole.cpp (Coverage: 56.49%) ---
+2025-08-13 08:49:08,565 - __main__ - ERROR - Target C++ file 'verilator/src/V3DfgPeephole.cpp' (derived from report path '/verilator/src/V3DfgPeephole.cpp') not found. Skipping.
+2025-08-13 08:49:08,565 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Error.cpp (Coverage: 56.64%) ---
+2025-08-13 08:49:08,565 - __main__ - ERROR - Target C++ file 'verilator/src/V3Error.cpp' (derived from report path '/verilator/src/V3Error.cpp') not found. Skipping.
+2025-08-13 08:49:08,565 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Descope.cpp (Coverage: 57.52%) ---
+2025-08-13 08:49:08,565 - __main__ - ERROR - Target C++ file 'verilator/src/V3Descope.cpp' (derived from report path '/verilator/src/V3Descope.cpp') not found. Skipping.
+2025-08-13 08:49:08,565 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Reloop.cpp (Coverage: 58.33%) ---
+2025-08-13 08:49:08,566 - __main__ - ERROR - Target C++ file 'verilator/src/V3Reloop.cpp' (derived from report path '/verilator/src/V3Reloop.cpp') not found. Skipping.
+2025-08-13 08:49:08,566 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Clock.cpp (Coverage: 58.57%) ---
+2025-08-13 08:49:08,566 - __main__ - ERROR - Target C++ file 'verilator/src/V3Clock.cpp' (derived from report path '/verilator/src/V3Clock.cpp') not found. Skipping.
+2025-08-13 08:49:08,566 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Premit.cpp (Coverage: 59.63%) ---
+2025-08-13 08:49:08,566 - __main__ - ERROR - Target C++ file 'verilator/src/V3Premit.cpp' (derived from report path '/verilator/src/V3Premit.cpp') not found. Skipping.
+2025-08-13 08:49:08,566 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Dead.cpp (Coverage: 60.73%) ---
+2025-08-13 08:49:08,566 - __main__ - ERROR - Target C++ file 'verilator/src/V3Dead.cpp' (derived from report path '/verilator/src/V3Dead.cpp') not found. Skipping.
+2025-08-13 08:49:08,566 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3CUse.cpp (Coverage: 60.87%) ---
+2025-08-13 08:49:08,566 - __main__ - ERROR - Target C++ file 'verilator/src/V3CUse.cpp' (derived from report path '/verilator/src/V3CUse.cpp') not found. Skipping.
+2025-08-13 08:49:08,566 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3EmitCModel.cpp (Coverage: 61.05%) ---
+2025-08-13 08:49:08,566 - __main__ - ERROR - Target C++ file 'verilator/src/V3EmitCModel.cpp' (derived from report path '/verilator/src/V3EmitCModel.cpp') not found. Skipping.
+2025-08-13 08:49:08,566 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3SchedAcyclic.cpp (Coverage: 61.11%) ---
+2025-08-13 08:49:08,566 - __main__ - ERROR - Target C++ file 'verilator/src/V3SchedAcyclic.cpp' (derived from report path '/verilator/src/V3SchedAcyclic.cpp') not found. Skipping.
+2025-08-13 08:49:08,566 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3EmitCBase.cpp (Coverage: 62.96%) ---
+2025-08-13 08:49:08,566 - __main__ - ERROR - Target C++ file 'verilator/src/V3EmitCBase.cpp' (derived from report path '/verilator/src/V3EmitCBase.cpp') not found. Skipping.
+2025-08-13 08:49:08,566 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Os.cpp (Coverage: 63.89%) ---
+2025-08-13 08:49:08,566 - __main__ - ERROR - Target C++ file 'verilator/src/V3Os.cpp' (derived from report path '/verilator/src/V3Os.cpp') not found. Skipping.
+2025-08-13 08:49:08,566 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3DfgAstToDfg.cpp (Coverage: 64.22%) ---
+2025-08-13 08:49:08,566 - __main__ - ERROR - Target C++ file 'verilator/src/V3DfgAstToDfg.cpp' (derived from report path '/verilator/src/V3DfgAstToDfg.cpp') not found. Skipping.
+2025-08-13 08:49:08,566 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Global.cpp (Coverage: 64.36%) ---
+2025-08-13 08:49:08,566 - __main__ - ERROR - Target C++ file 'verilator/src/V3Global.cpp' (derived from report path '/verilator/src/V3Global.cpp') not found. Skipping.
+2025-08-13 08:49:08,566 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3GraphAlg.cpp (Coverage: 65.24%) ---
+2025-08-13 08:49:08,566 - __main__ - ERROR - Target C++ file 'verilator/src/V3GraphAlg.cpp' (derived from report path '/verilator/src/V3GraphAlg.cpp') not found. Skipping.
+2025-08-13 08:49:08,566 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3OrderProcessDomains.cpp (Coverage: 65.85%) ---
+2025-08-13 08:49:08,566 - __main__ - ERROR - Target C++ file 'verilator/src/V3OrderProcessDomains.cpp' (derived from report path '/verilator/src/V3OrderProcessDomains.cpp') not found. Skipping.
+2025-08-13 08:49:08,566 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Cast.cpp (Coverage: 66.98%) ---
+2025-08-13 08:49:08,566 - __main__ - ERROR - Target C++ file 'verilator/src/V3Cast.cpp' (derived from report path '/verilator/src/V3Cast.cpp') not found. Skipping.
+2025-08-13 08:49:08,567 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Active.cpp (Coverage: 67.17%) ---
+2025-08-13 08:49:08,567 - __main__ - ERROR - Target C++ file 'verilator/src/V3Active.cpp' (derived from report path '/verilator/src/V3Active.cpp') not found. Skipping.
+2025-08-13 08:49:08,567 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Expand.cpp (Coverage: 67.22%) ---
+2025-08-13 08:49:08,567 - __main__ - ERROR - Target C++ file 'verilator/src/V3Expand.cpp' (derived from report path '/verilator/src/V3Expand.cpp') not found. Skipping.
+2025-08-13 08:49:08,567 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Undriven.cpp (Coverage: 68.09%) ---
+2025-08-13 08:49:08,567 - __main__ - ERROR - Target C++ file 'verilator/src/V3Undriven.cpp' (derived from report path '/verilator/src/V3Undriven.cpp') not found. Skipping.
+2025-08-13 08:49:08,567 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3DfgDfgToAst.cpp (Coverage: 68.13%) ---
+2025-08-13 08:49:08,567 - __main__ - ERROR - Target C++ file 'verilator/src/V3DfgDfgToAst.cpp' (derived from report path '/verilator/src/V3DfgDfgToAst.cpp') not found. Skipping.
+2025-08-13 08:49:08,567 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Waiver.cpp (Coverage: 68.57%) ---
+2025-08-13 08:49:08,567 - __main__ - ERROR - Target C++ file 'verilator/src/V3Waiver.cpp' (derived from report path '/verilator/src/V3Waiver.cpp') not found. Skipping.
+2025-08-13 08:49:08,567 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Clean.cpp (Coverage: 68.69%) ---
+2025-08-13 08:49:08,567 - __main__ - ERROR - Target C++ file 'verilator/src/V3Clean.cpp' (derived from report path '/verilator/src/V3Clean.cpp') not found. Skipping.
+2025-08-13 08:49:08,567 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Split.cpp (Coverage: 68.80%) ---
+2025-08-13 08:49:08,567 - __main__ - ERROR - Target C++ file 'verilator/src/V3Split.cpp' (derived from report path '/verilator/src/V3Split.cpp') not found. Skipping.
+2025-08-13 08:49:08,567 - __main__ - INFO - 
+--- Processing C++ file: verilator/src/V3Const.cpp (Coverage: 71.13%) ---
+2025-08-13 08:49:08,567 - __main__ - ERROR - Target C++ file 'verilator/src/V3Const.cpp' (derived from report path '/verilator/src/V3Const.cpp') not found. Skipping.
+2025-08-13 08:49:08,567 - __main__ - INFO - 
+--- Overall Generation Summary ---
+2025-08-13 08:49:08,567 - __main__ - INFO - Total C++ files targeted (below threshold): 98
+2025-08-13 08:49:08,567 - __main__ - INFO - Successfully generated Verilog snippets: 0
+2025-08-13 08:49:08,567 - __main__ - INFO - Failed to generate Verilog snippets: 98
+2025-08-13 08:49:08,567 - __main__ - INFO - ----------------------------------
+2025-08-13 08:49:08,567 - __main__ - WARNING - Completed with one or more failures or no successful generations for targeted items.

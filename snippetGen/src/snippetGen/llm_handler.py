@@ -20,7 +20,7 @@ class LLMHandler:
                         This will be used to determine the model string for LiteLLM.
         """
         if model_type == 'openai':
-            self.model_name = 'o3'  #'o4-mini' / 'o3'
+            self.model_name = 'o4-mini'  #'o4-mini' / 'o3'
             self.provider = None
         elif model_type == 'mistral':
             self.model_name = 'mistral/codestral-latest'

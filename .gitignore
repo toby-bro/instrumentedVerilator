@@ -28,3 +28,10 @@ coverage*.json
 
 dist/
 mismatches/
+
+no-cov-o3
+no-cov-o4-mini
+no-cov-gemini
+cov-o3
+cov-o4-mini
+cov-gemini

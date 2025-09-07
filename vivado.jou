@@ -1,0 +1,14 @@
+#-----------------------------------------------------------
+# Vivado v2023.2.1 (64-bit)
+# SW Build 4081461 on Thu Dec 14 12:22:04 MST 2023
+# IP Build 4080415 on Thu Dec 14 21:01:57 MST 2023
+# SharedData Build 4077621 on Mon Dec 11 00:23:44 MST 2023
+# Start of session at: Tue Aug 19 10:20:37 2025
+# Process ID: 2547324
+# Current directory: /scratch/jnstrauss/instrumentedVerilator
+# Command line: vivado -mode batch -source /tmp/vivado_script_1002020474.tcl
+# Log file: /scratch/jnstrauss/instrumentedVerilator/vivado.log
+# Journal file: /scratch/jnstrauss/instrumentedVerilator/vivado.jou
+# Running On: a9, OS: Linux, CPU Frequency: 3491.638 MHz, CPU Physical cores: 16, Host memory: 270357 MB
+#-----------------------------------------------------------
+source /tmp/vivado_script_1002020474.tcl

@@ -11,7 +11,8 @@ logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
-VERILATOR_IS_MY_TARGET = False  # This should be set to True if Verilator is the target tool
+VERILATOR_IS_MY_TARGET = False # This should be set to True if Verilator is the target tool
+SKIP_EXISTING = True
 
 
 class VerilogSeedGeneratorAgent:
@@ -92,7 +93,7 @@ class VerilogSeedGeneratorAgent:
                 error_summary=lint_stderr.strip() if not lint_success else '',
                 coverage_excerpt=str(coverage),
             )
-            if lint_success:
+            if SKIP_EXISTING or lint_success:
                 logger.info(f'Existing code is lint-clean: {output_v_file_path}')
                 return True
         else:

@@ -65,15 +65,16 @@ run: run-verilator
 
 .PHONY: run-verilator
 run-verilator:
-	docker run -it --rm -v $(PWD)/../generated:/generated -v $(PWD)/naive:/naive -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippetGen:/snippetGen --workdir=/testFiles ghcr.io/toby-bro/instrumentedverilator:main /bin/bash
+	docker run -it --rm -v $(PWD)/../pfuzz/:/pfuzz -v $(PWD)/../generated:/generated -v $(PWD)/valid:/valid -v $(PWD)/naive:/naive -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippetGen:/snippetGen --workdir=/testFiles ghcr.io/toby-bro/instrumentedverilator:main /bin/bash
+
 
 .PHONY: run-yosys
 run-yosys:
-	docker run -it --rm -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippetGen:/snippetGen --workdir=/testFiles ghcr.io/toby-bro/instrumentedyosys:main /bin/bash
+	docker run -it --rm -v $(PWD)/../generated/:/generated -v $(PWD)/../pfuzz/:/pfuzz -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippetGen:/snippetGen --workdir=/testFiles ghcr.io/toby-bro/instrumentedyosys:main /bin/bash
 
 .PHONY: run-slang
 run-slang:
-	docker run -it --rm -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippetGen:/snippetGen --workdir=/testFiles ghcr.io/toby-bro/instrumentedslang:main /bin/bash
+	docker run -it --rm -v $(PWD)/../pfuzz/:/pfuzz -v $(PWD)/testFiles:/testFiles -v $(PWD)/snippetGen:/snippetGen --workdir=/testFiles ghcr.io/toby-bro/instrumentedslang:main /bin/bash
 
 .PHONY: getCoverage
 getCoverage:

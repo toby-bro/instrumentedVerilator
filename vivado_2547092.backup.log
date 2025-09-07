@@ -1,0 +1,78 @@
+#-----------------------------------------------------------
+# Vivado v2023.2.1 (64-bit)
+# SW Build 4081461 on Thu Dec 14 12:22:04 MST 2023
+# IP Build 4080415 on Thu Dec 14 21:01:57 MST 2023
+# SharedData Build 4077621 on Mon Dec 11 00:23:44 MST 2023
+# Start of session at: Tue Aug 19 10:20:32 2025
+# Process ID: 2547092
+# Current directory: /scratch/jnstrauss/instrumentedVerilator
+# Command line: vivado -mode batch -source /tmp/vivado_script_949493699.tcl
+# Log file: /scratch/jnstrauss/instrumentedVerilator/vivado.log
+# Journal file: /scratch/jnstrauss/instrumentedVerilator/vivado.jou
+# Running On: a9, OS: Linux, CPU Frequency: 3491.610 MHz, CPU Physical cores: 16, Host memory: 270357 MB
+#-----------------------------------------------------------
+source /tmp/vivado_script_949493699.tcl
+# set_msg_config -id {Synth 8-5821} -new_severity {WARNING}
+# read_verilog dist/worker_21_1755623936944428985_0/LogicMTask_stepCost.sv
+read_verilog: Time (s): cpu = 00:00:17 ; elapsed = 00:00:20 . Memory (MB): peak = 1400.461 ; gain = 87.895 ; free physical = 252603 ; free virtual = 262142
+# synth_design -top LogicMTask_stepCost
+Command: synth_design -top LogicMTask_stepCost
+Starting synth_design
+Using part: xc7vx485tffg1157-1
+Attempting to get a license for feature 'Synthesis' and/or device 'xc7vx485t'
+INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7vx485t'
+INFO: [Common 17-1540] The version limit for your license is '2025.07' and has expired for new software. A version limit expiration means that, although you may be able to continue to use the current version of tools or IP with this license, you will not be eligible for new releases.
+INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 4 processes.
+INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
+INFO: [Synth 8-7075] Helper process launched with PID 2550184
+---------------------------------------------------------------------------------
+Starting Synthesize : Time (s): cpu = 00:00:06 ; elapsed = 00:00:06 . Memory (MB): peak = 1833.016 ; gain = 418.586 ; free physical = 250521 ; free virtual = 260060
+---------------------------------------------------------------------------------
+INFO: [Synth 8-6157] synthesizing module 'LogicMTask_stepCost' [/scratch/jnstrauss/instrumentedVerilator/dist/worker_21_1755623936944428985_0/LogicMTask_stepCost.sv:1]
+INFO: [Synth 8-6155] done synthesizing module 'LogicMTask_stepCost' (0#1) [/scratch/jnstrauss/instrumentedVerilator/dist/worker_21_1755623936944428985_0/LogicMTask_stepCost.sv:1]
+WARNING: [Synth 8-3917] design LogicMTask_stepCost has port step_cost[63] driven by constant 0
+WARNING: [Synth 8-3917] design LogicMTask_stepCost has port step_cost[62] driven by constant 0
+---------------------------------------------------------------------------------
+Finished Synthesize : Time (s): cpu = 00:00:09 ; elapsed = 00:00:09 . Memory (MB): peak = 1904.984 ; gain = 490.555 ; free physical = 250213 ; free virtual = 259753
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Constraint Validation : Time (s): cpu = 00:00:09 ; elapsed = 00:00:10 . Memory (MB): peak = 1922.797 ; gain = 508.367 ; free physical = 250188 ; free virtual = 259728
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Loading Part and Timing Information
+---------------------------------------------------------------------------------
+Loading part: xc7vx485tffg1157-1
+INFO: [Device 21-403] Loading part xc7vx485tffg1157-1
+---------------------------------------------------------------------------------
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:09 ; elapsed = 00:00:10 . Memory (MB): peak = 1930.801 ; gain = 516.371 ; free physical = 250184 ; free virtual = 259727
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:11 ; elapsed = 00:00:11 . Memory (MB): peak = 1939.707 ; gain = 525.277 ; free physical = 250161 ; free virtual = 259705
+---------------------------------------------------------------------------------
+No constraint files found.
+---------------------------------------------------------------------------------
+Start RTL Component Statistics 
+---------------------------------------------------------------------------------
+Detailed RTL Component Info : 
++---Adders : 
+	   2 Input   64 Bit       Adders := 1     
++---Multipliers : 
+	               4x64  Multipliers := 1     
++---Muxes : 
+	   2 Input   61 Bit        Muxes := 1     
+---------------------------------------------------------------------------------
+Finished RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Part Resource Summary
+---------------------------------------------------------------------------------
+INFO: [Common 17-41] Interrupt caught. Command should exit soon.
+Part Resources:
+DSPs: 2800 (col length:140)
+BRAMs: 2060 (col length: RAMB18 140 RAMB36 70)
+1
+INFO: [Common 17-83] Releasing license: Synthesis
+10 Infos, 2 Warnings, 0 Critical Warnings and 1 Errors encountered.
+synth_design failed
+INFO: [Common 17-344] 'source' was cancelled
+INFO: [Common 17-206] Exiting Vivado at Tue Aug 19 10:21:27 2025...
