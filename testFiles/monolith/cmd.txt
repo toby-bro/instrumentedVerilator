@@ -1,0 +1,8 @@
+fastcov -o report.json -b -d /verilator/src --exclude-glob '*.[hly]' --include .cpp --exclude /usr/include V3Coverage.cpp V3CoverageJoin.cpp V3EmitCMake.cpp V3EmitXml.cpp V3ExecGraph.cpp V3GraphTest.cpp V3HierBlock.cpp V3Trace.cpp V3TraceDecl.cpp V3EmitV.cpp V3TSP.cpp V3Scoreboard.cpp V3Stats.cpp V3ProtectLib.cpp V3Broken.cpp V3Interface.cpp && fastcov_summary report.json
+
+for i in monolith/no-feed-gemini/* ; do $VERILATOR_ROOT/bin/verilator --cc --binary --Wno-MULTITOP -Wno-MULTIDRIVEN --Wno-UNOPTFLAT --Wno-NOLATCH --Wno-WIDTHTRUNC --Wno-CMPCONST --Wno-WIDTHEXPAND --Wno-UNSIGNED -CFLAGS '-I/testFiles/include -I -g' --threads 8 --comp-limit-blocks 10 $i ; done
+
+
+for i in monolith/feed-o3/*.sv ; do slang --error-limit=0 $i &>/dev/null ; done && fastcov -o report.json -b -d /slang/ --exclude-glob '*.[hly]' --include .cc .cpp --exclude /usr/include analysis/ diagnostics/ driver/ numeric/ syntax/ text/ util/ /slang/build && fastcov_summary report.json
+
+for i in $(ls generated/*.sv) ; do $VERILATOR_ROOT/bin/verilator --cc --binary --Wno-MULTITOP -Wno-MULTIDRIVEN --Wno-UNOPTFLAT --Wno-NOLATCH --Wno-WIDTHTRUNC --Wno-CMPCONST --Wno-WIDTHEXPAND --Wno-UNSIGNED -CFLAGS '-I/testFiles/include -I -g' --threads 8 --comp-limit-blocks 10 $i ; fastcov -o report.json -b -d /verilator/src --exclude-glob '*.[hly]' --include .cpp --exclude /usr/include V3Coverage.cpp V3CoverageJoin.cpp V3EmitCMake.cpp V3EmitXml.cpp V3ExecGraph.cpp V3GraphTest.cpp V3HierBlock.cpp V3Trace.cpp V3TraceDecl.cpp V3EmitV.cpp V3TSP.cpp V3Scoreboard.cpp V3Stats.cpp V3ProtectLib.cpp V3Broken.cpp V3Interface.cpp && fastcov_summary report.json | tail -n 4 | grep -oP '\b\d+\.\d(?=\%)' > $i.cov ; done
