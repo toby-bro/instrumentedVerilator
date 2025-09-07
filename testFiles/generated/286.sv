@@ -1,0 +1,35 @@
+module mod_casex_wildcard_overlap_priority (
+    input bit [3:0] in_mask_x,
+    output bit [1:0] out_match_type_x
+);
+always_comb begin
+    out_match_type_x = 2'b01;
+    priority casex (in_mask_x)
+        4'b1X0Z: begin
+            out_match_type_x = 2'b10;
+        end
+        4'b10?Z: begin
+            out_match_type_x = 2'b11;
+        end
+        4'bZ1?X: begin
+            out_match_type_x = 2'b00;
+        end
+        default: begin
+            out_match_type_x = 2'b01;
+        end
+    endcase
+end
+endmodule
+
+module snippet (
+    input wire clk,
+    input bit [3:0] inj_in_mask_x_1755007850817_183,
+    input wire reset,
+    output bit [1:0] inj_out_match_type_x_1755007850817_615
+);
+    mod_casex_wildcard_overlap_priority mod_casex_wildcard_overlap_priority_inst_1755007850817_3947 (
+        .out_match_type_x(inj_out_match_type_x_1755007850817_615),
+        .in_mask_x(inj_in_mask_x_1755007850817_183)
+    );
+endmodule
+
