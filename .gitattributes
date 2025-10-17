@@ -1,2 +1,5 @@
 coverage_reports.bak/** linguist-generated
 naive/** linguist-generated
+valid*/** linguist-generated
+testFiles/** linguist-generated
+snippetGen/** linguist-generated
