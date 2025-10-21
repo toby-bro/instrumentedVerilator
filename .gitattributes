@@ -5,4 +5,11 @@ monolith/** linguist-generated
 testFiles/monolith/** linguist-generated
 testFiles/generated/** linguist-generated
 testFiles/verismith/** linguist-generated
+testFiles/verilator/** linguist-generated
+testFiles/gen-50/** linguist-generated
+testFiles/personal_test_files/** linguist-generated
+testFiles/slang-openai/** linguist-generated
 testFiles/transfuzzTestFiles/** linguist-generated
+testFiles/slang/** linguist-generated
+testFiles/vf-50/** linguist-generated
+
