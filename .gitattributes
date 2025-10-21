@@ -1,7 +1,6 @@
 coverage_reports.bak/** linguist-generated
 naive/** linguist-generated
 valid*/** linguist-generated
-monolith/** linguist-generated
 testFiles/monolith/** linguist-generated
 testFiles/generated/** linguist-generated
 testFiles/verismith/** linguist-generated
@@ -12,4 +11,3 @@ testFiles/slang-openai/** linguist-generated
 testFiles/transfuzzTestFiles/** linguist-generated
 testFiles/slang/** linguist-generated
 testFiles/vf-50/** linguist-generated
-
